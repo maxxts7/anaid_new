@@ -20,6 +20,15 @@ const sizes: Record<Size, string> = {
   lg: 'h-12 px-5 text-lead',
 }
 
+/**
+ * The button styling on its own, for the handful of places that need a plain
+ * `<a>` rather than a `Link`: `mailto:`, `tel:` and the brochure download, none
+ * of which are routes `typedRoutes` will accept.
+ */
+export function buttonClass(variant: Variant = 'primary', size: Size = 'md', className?: string) {
+  return cn(base, variants[variant], sizes[size], className)
+}
+
 type ButtonProps = React.ComponentProps<'button'> & { variant?: Variant; size?: Size }
 
 export function Button({ variant = 'primary', size = 'md', className, ...props }: ButtonProps) {

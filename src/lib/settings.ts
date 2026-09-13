@@ -28,13 +28,15 @@ type Definition = {
 export const SETTING_DEFINITIONS = [
   // --- Company -------------------------------------------------------------
   { key: 'company.name', kind: 'STRING', group: 'company', label: 'Company name', default: 'ANAID Quality Disposables Limited' },
-  { key: 'company.email', kind: 'STRING', group: 'company', label: 'Sales email', default: 'sales@anaid.co.uk' },
-  { key: 'company.phone', kind: 'STRING', group: 'company', label: 'Telephone', default: '020 0000 0000' },
-  { key: 'company.website', kind: 'STRING', group: 'company', label: 'Website', default: 'https://www.anaid.co.uk' },
-  { key: 'company.address', kind: 'STRING', group: 'company', label: 'Registered address', default: 'Unit 1, Example Industrial Estate, London' },
-  { key: 'company.vatNumber', kind: 'STRING', group: 'company', label: 'VAT number', default: 'GB000000000' },
-  { key: 'company.companyNumber', kind: 'STRING', group: 'company', label: 'Company number', default: '00000000' },
-  { key: 'company.logoUrl', kind: 'STRING', group: 'company', label: 'Logo URL', description: 'Shown in the header and on invoices. Leave blank for the wordmark.', default: '' },
+  { key: 'company.email', kind: 'STRING', group: 'company', label: 'Sales email', default: 'sales@aqdl.uk' },
+  { key: 'company.phone', kind: 'STRING', group: 'company', label: 'Telephone', default: '0808 168 3344' },
+  { key: 'company.website', kind: 'STRING', group: 'company', label: 'Website', default: 'https://anaidqualitydisposables.uk' },
+  { key: 'company.address', kind: 'STRING', group: 'company', label: 'Registered address', default: 'Unit 4B, 83-101 Anston Avenue, Worksop, S81 7HU' },
+  // Not published on the old site. Staff fill these in from Settings before the
+  // first invoice goes out.
+  { key: 'company.vatNumber', kind: 'STRING', group: 'company', label: 'VAT number', default: '' },
+  { key: 'company.companyNumber', kind: 'STRING', group: 'company', label: 'Company number', default: '' },
+  { key: 'company.logoUrl', kind: 'STRING', group: 'company', label: 'Logo URL', description: 'Shown in the header and on invoices. Leave blank for the ANAID mark.', default: '' },
 
   // --- Commercial ----------------------------------------------------------
   {
@@ -108,7 +110,7 @@ export const SETTING_DEFINITIONS = [
     group: 'notifications',
     label: 'Admin notification address',
     description: 'Where new registration alerts are sent once email is switched on.',
-    default: 'sales@anaid.co.uk',
+    default: 'sales@aqdl.uk',
   },
 ] as const satisfies readonly Definition[]
 

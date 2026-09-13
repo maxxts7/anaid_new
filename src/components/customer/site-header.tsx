@@ -22,14 +22,24 @@ export async function SiteHeader({ query }: { query?: string }) {
   return (
     <header className="sticky top-0 z-30 border-b border-hairline bg-surface/80 backdrop-blur-xl supports-[backdrop-filter]:bg-surface/70">
       <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4">
-        <Link href="/" className="group mr-auto flex items-baseline gap-2">
-          <span
-            className="text-lead font-bold tracking-[-0.03em] text-ink transition-colors group-hover:text-accent"
-            style={{ fontStretch: '88%' }}
-          >
-            ANAID
+        <Link href="/" className="group mr-auto flex items-center gap-2.5">
+          <img
+            src="/brand/logo-mark.png"
+            alt=""
+            width={42}
+            height={28}
+            className="h-7 w-auto"
+            fetchPriority="high"
+          />
+          <span className="flex items-baseline gap-2">
+            <span
+              className="text-lead font-bold tracking-[-0.03em] text-ink transition-colors group-hover:text-accent"
+              style={{ fontStretch: '88%' }}
+            >
+              ANAID
+            </span>
+            <span className="hidden text-micro text-ink-muted sm:inline">Quality Disposables</span>
           </span>
-          <span className="hidden text-micro text-ink-muted sm:inline">Quality Disposables</span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex">
@@ -41,6 +51,12 @@ export async function SiteHeader({ query }: { query?: string }) {
               Orders
             </Link>
           )}
+          <Link href="/about" className="rounded-sm px-3 py-1.5 text-small text-ink-muted hover:bg-sunken hover:text-ink">
+            About
+          </Link>
+          <Link href="/contact" className="rounded-sm px-3 py-1.5 text-small text-ink-muted hover:bg-sunken hover:text-ink">
+            Contact
+          </Link>
         </nav>
 
         {approved && (
