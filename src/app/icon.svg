@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <rect width="32" height="32" rx="6" fill="#101418"/>
+  <!-- A carton, seen from the front: lid seam across the top, tape down the middle. -->
+  <path d="M7 11h18v14H7z" fill="none" stroke="#F4F6F7" stroke-width="2"/>
+  <path d="M7 11l3-4h12l3 4" fill="none" stroke="#F4F6F7" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M16 11v14" stroke="#1740DE" stroke-width="2"/>
+</svg>

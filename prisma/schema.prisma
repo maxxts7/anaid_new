@@ -1,0 +1,866 @@
+// ANAID Quality Disposables Limited — B2B ordering and distribution platform
+//
+// Conventions that hold throughout this schema:
+//
+//   * Money is stored as INTEGER PENCE. Never a float, never a Decimal. All
+//     arithmetic on money is integer arithmetic, so totals cannot drift by a
+//     penny (LEVEL-4 §5, "General requirements on the data").
+//   * Rates and percentages are stored as INTEGER BASIS POINTS. 2000 = 20.00%.
+//     Same reasoning.
+//   * History is never destroyed. Products deactivate, staff disable, orders
+//     cancel. Nothing that an order or invoice points at is ever deleted.
+//   * Anything copied onto an order (address, price, product name) is copied,
+//     not referenced, so that history stays true when the live record changes.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Enumerations
+// ---------------------------------------------------------------------------
+
+/// The five account statuses. LEVEL-4 §2. Everything in the system keys off these.
+enum AccountStatus {
+  REGISTERED // Created, contact details not yet verified. Can do nothing.
+  PENDING_APPROVAL // Verified, awaiting a human decision. Browse only, no prices.
+  APPROVED // Trading. Prices visible, orders accepted.
+  REJECTED // Declined. Browse only, no prices.
+  SUSPENDED // Temporarily stopped. Browse only, existing orders run to completion.
+}
+
+enum BusinessType {
+  RESTAURANT
+  TAKEAWAY
+  CAFE
+  FAST_FOOD
+  BAKERY
+  CATERING
+  HOTEL
+  PUB
+  FOOD_TRUCK
+  SUPERMARKET
+  CONVENIENCE_STORE
+  OTHER
+}
+
+/// LEVEL-4 §27. Staff may hold more than one (gap #24), so this is an array.
+enum StaffRole {
+  SUPER_ADMIN
+  SALES_ADMIN
+  WAREHOUSE
+  ACCOUNTS
+  DELIVERY
+}
+
+/// The nine order statuses. LEVEL-4 §16.
+enum OrderStatus {
+  RECEIVED
+  CONFIRMED
+  PROCESSING
+  PICKING
+  PACKED
+  DISPATCHED
+  OUT_FOR_DELIVERY
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  ACCOUNT // On credit terms. The only method in v1.
+  CARD // Reserved. Not implemented in v1.
+}
+
+enum OtpChannel {
+  SMS
+  EMAIL
+}
+
+enum OtpPurpose {
+  REGISTRATION
+  LOGIN
+}
+
+/// Which pricing rule produced the price on a line. Recorded on every order
+/// line so that a customer query can be answered from the order itself
+/// (DECISIONS.md, "Pricing").
+enum PriceSource {
+  STANDARD
+  PRICING_LEVEL
+  CUSTOMER_SPECIFIC
+  QUANTITY_BREAK
+  PROMOTION
+}
+
+enum StockMovementReason {
+  RESERVED_FOR_ORDER
+  RELEASED_FROM_ORDER
+  DISPATCHED
+  RECEIPT
+  ADJUSTMENT
+  RETURN
+}
+
+enum ActorType {
+  STAFF
+  CUSTOMER
+  SYSTEM
+}
+
+enum NotificationAudience {
+  CUSTOMER
+  STAFF
+}
+
+enum SettingType {
+  STRING
+  INT
+  BOOL
+  JSON
+}
+
+enum PromotionType {
+  PERCENT_OFF
+  FIXED_PRICE
+}
+
+// ---------------------------------------------------------------------------
+// Customers — the businesses ANAID trades with
+// ---------------------------------------------------------------------------
+
+/// A customer is a BUSINESS, not a person. People who log in are CustomerUser.
+model Customer {
+  id String @id @default(cuid())
+
+  /// ANAID-C00001. Issued at approval, never before, never changed.
+  customerNumber String? @unique
+
+  businessName String
+  contactName  String
+  /// Business contact address for invoices and notices. Unique across customers.
+  email        String       @unique
+  /// Business contact mobile for delivery notices. Unique across customers.
+  mobile       String       @unique
+  altPhone     String?
+  businessType BusinessType
+  website      String?
+  vatNumber    String?
+  companyNumber String?
+
+  /// Denormalised from the default delivery address so the approvals queue and
+  /// customer search can filter by area without a join.
+  postcode String
+
+  status AccountStatus @default(REGISTERED)
+
+  /// Gap #12 — "request more information" is PENDING_APPROVAL carrying a flag,
+  /// not a sixth status.
+  infoRequested        Boolean   @default(false)
+  infoRequestedMessage String?
+  infoRequestedAt      DateTime?
+
+  pricingLevelId String?
+  pricingLevel   PricingLevel? @relation(fields: [pricingLevelId], references: [id])
+
+  /// Zero for non-credit customers. Pence.
+  creditLimitPence Int @default(0)
+  /// e.g. 30 = thirty days from invoice. Zero means payment before dispatch.
+  paymentTermsDays Int @default(0)
+
+  termsAcceptedAt   DateTime?
+  privacyAcceptedAt DateTime?
+  marketingConsent  Boolean   @default(false)
+  marketingConsentAt DateTime?
+
+  verifiedAt      DateTime?
+  approvedAt      DateTime?
+  approvedById    String?
+  approvedBy      Staff?    @relation("CustomerApprovedBy", fields: [approvedById], references: [id])
+  /// Internal only. The customer is never shown this.
+  rejectionReason String?
+  rejectedAt      DateTime?
+  suspensionReason String?
+  suspendedAt     DateTime?
+
+  /// Set when staff create a pre-approved account for an existing telephone
+  /// customer (gap #13) rather than the customer self-registering.
+  createdById String?
+  createdBy   Staff?  @relation("CustomerCreatedBy", fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users          CustomerUser[]
+  addresses      Address[]
+  orders         Order[]
+  customerPrices CustomerPrice[]
+  notes          CustomerNote[]
+  favourites     Favourite[]
+  notifications  Notification[]
+
+  @@index([status])
+  @@index([businessName])
+  @@index([postcode])
+  @@index([createdAt])
+}
+
+/// A person who logs in on behalf of a business.
+///
+/// Modelled separately from Customer from day one (gap #3). v1 creates exactly
+/// one of these per business, but sessions, orders and audit entries all point
+/// here rather than at the business, so adding an owner's manager later is a
+/// data change and not a rewrite.
+model CustomerUser {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  name   String
+  email  String  @unique
+  mobile String  @unique
+
+  /// The account created at registration. Cannot be removed by other users.
+  isPrimary Boolean @default(false)
+
+  lastLoginAt DateTime?
+  /// Set rather than deleted — orders must keep pointing at whoever placed them.
+  disabledAt  DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions Session[]
+  basket   Basket?
+  orders   Order[]
+
+  @@index([customerId])
+}
+
+model Address {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  /// e.g. "Main kitchen", "Head office".
+  label    String?
+  line1    String
+  line2    String?
+  city     String
+  county   String?
+  postcode String
+  country  String  @default("GB")
+
+  contactPhone         String?
+  deliveryInstructions String?
+
+  isDefaultBilling  Boolean @default(false)
+  isDefaultDelivery Boolean @default(false)
+
+  /// Addresses are archived rather than deleted; old orders copied their text
+  /// but staff may still want to see where a historic address came from.
+  archivedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([customerId])
+  @@index([postcode])
+}
+
+/// Internal staff notes about a customer. The customer never sees these.
+model CustomerNote {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  staffId    String?
+  staff      Staff?   @relation(fields: [staffId], references: [id])
+  body       String
+  createdAt  DateTime @default(now())
+
+  @@index([customerId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Staff
+// ---------------------------------------------------------------------------
+
+model Staff {
+  id           String      @id @default(cuid())
+  name         String
+  email        String      @unique
+  passwordHash String
+  roles        StaffRole[]
+
+  active      Boolean   @default(true)
+  lastLoginAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  sessions          Session[]
+  approvedCustomers Customer[]     @relation("CustomerApprovedBy")
+  createdCustomers  Customer[]     @relation("CustomerCreatedBy")
+  customerNotes     CustomerNote[]
+  customerPrices    CustomerPrice[]
+  orderStatusChanges OrderStatusChange[]
+  stockMovements    StockMovement[]
+  notifications     Notification[]
+
+  @@index([active])
+}
+
+// ---------------------------------------------------------------------------
+// Sessions and one-time codes
+// ---------------------------------------------------------------------------
+
+/// Sessions are rows, not just signed cookies, so that suspending a customer or
+/// disabling a member of staff takes effect immediately rather than whenever
+/// their token happens to expire.
+model Session {
+  id String @id @default(cuid())
+
+  customerUserId String?
+  customerUser   CustomerUser? @relation(fields: [customerUserId], references: [id], onDelete: Cascade)
+
+  staffId String?
+  staff   Staff?  @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  expiresAt  DateTime
+  lastSeenAt DateTime  @default(now())
+  revokedAt  DateTime?
+
+  userAgent String?
+  ipAddress String?
+
+  createdAt DateTime @default(now())
+
+  @@index([customerUserId])
+  @@index([staffId])
+  @@index([expiresAt])
+}
+
+/// One-time codes.
+///
+/// While OTP_FIXED_CODE is set, the code is pinned (1234) and nothing is sent.
+/// The row is still written so that expiry, attempt limits and rate limits are
+/// exercised exactly as they will be when real delivery is switched on.
+model OtpCode {
+  id String @id @default(cuid())
+
+  /// Normalised email address or mobile number the code was issued against.
+  identifier String
+  channel    OtpChannel
+  purpose    OtpPurpose
+
+  codeHash  String
+  expiresAt DateTime
+  attempts  Int       @default(0)
+  consumedAt DateTime?
+
+  ipAddress String?
+  createdAt DateTime @default(now())
+
+  @@index([identifier, purpose, createdAt])
+  @@index([expiresAt])
+}
+
+// ---------------------------------------------------------------------------
+// Catalogue
+// ---------------------------------------------------------------------------
+
+model Category {
+  id          String  @id @default(cuid())
+  name        String
+  slug        String  @unique
+  description String?
+  imageUrl    String?
+
+  parentId String?
+  parent   Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children Category[] @relation("CategoryTree")
+
+  sortOrder Int     @default(0)
+  active    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products   Product[]
+  promotions Promotion[]
+
+  @@index([parentId])
+  @@index([active, sortOrder])
+}
+
+model Product {
+  id      String  @id @default(cuid())
+  sku     String  @unique
+  barcode String?
+  name    String
+  slug    String  @unique
+
+  description String?
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id])
+
+  brand    String?
+  size     String?
+  material String?
+  colour   String?
+
+  /// How the pack is described on the shelf, e.g. "50 sleeve", "10 x 100".
+  packSize       String?
+  /// Individual items in one carton, e.g. 1000 cups.
+  unitsPerCarton Int     @default(1)
+  /// Cartons in the sold unit. Normally 1.
+  cartonQuantity Int     @default(1)
+  /// The unit a customer actually buys — normally a carton.
+  sellUnit       String  @default("carton")
+  /// Wholesale minimum. The basket refuses to check out below this.
+  minOrderQuantity Int   @default(1)
+
+  /// List price, before any customer pricing. Pence, per sell unit.
+  standardPricePence Int
+  /// 2000 = 20.00%. Zero-rated products carry 0.
+  vatRateBasisPoints Int @default(2000)
+
+  /// Physical stock. available = stockOnHand - stockReserved.
+  /// Reserved at order, reduced at dispatch (gap #2).
+  stockOnHand   Int @default(0)
+  stockReserved Int @default(0)
+  lowStockThreshold Int @default(0)
+  /// Products that are never out of stock (printed to order, drop-shipped) skip
+  /// the availability check entirely.
+  trackStock    Boolean @default(true)
+
+  weightGrams Int?
+  dimensions  String?
+
+  featured Boolean @default(false)
+  /// Inactive products are hidden from customers but never deleted — orders and
+  /// invoices refer to them (LEVEL-4 §19).
+  active   Boolean @default(true)
+  sortOrder Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  images         ProductImage[]
+  quantityBreaks QuantityBreak[]
+  levelPrices    ProductLevelPrice[]
+  customerPrices CustomerPrice[]
+  orderLines     OrderLine[]
+  basketLines    BasketLine[]
+  stockMovements StockMovement[]
+  favourites     Favourite[]
+  promotions     Promotion[]
+
+  @@index([categoryId, active])
+  @@index([active, featured])
+  @@index([name])
+  @@index([barcode])
+}
+
+model ProductImage {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  alt       String?
+  sortOrder Int     @default(0)
+  isPrimary Boolean @default(false)
+
+  @@index([productId, sortOrder])
+}
+
+// ---------------------------------------------------------------------------
+// Pricing
+// ---------------------------------------------------------------------------
+
+/// A pricing level is a PERCENTAGE off the standard price (gap #16), so a new
+/// product is sellable at every level the moment it is created.
+/// ProductLevelPrice overrides the percentage where a specific number is needed.
+model PricingLevel {
+  id   String @id @default(cuid())
+  code String @unique
+  name String
+
+  /// 1200 = 12.00% off the standard price.
+  discountBasisPoints Int @default(0)
+
+  /// The level assigned when staff approve without choosing one.
+  isDefault Boolean @default(false)
+  sortOrder Int     @default(0)
+  active    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  customers   Customer[]
+  levelPrices ProductLevelPrice[]
+}
+
+/// An explicit price for one product at one level, overriding the percentage.
+model ProductLevelPrice {
+  id             String       @id @default(cuid())
+  productId      String
+  product        Product      @relation(fields: [productId], references: [id], onDelete: Cascade)
+  pricingLevelId String
+  pricingLevel   PricingLevel @relation(fields: [pricingLevelId], references: [id], onDelete: Cascade)
+  pricePence     Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([productId, pricingLevelId])
+}
+
+/// A price negotiated with one customer for one product.
+model CustomerPrice {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  pricePence Int
+  startsAt   DateTime?
+  endsAt     DateTime?
+  note       String?
+
+  createdById String?
+  createdBy   Staff?  @relation(fields: [createdById], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([customerId, productId])
+  @@index([productId])
+}
+
+/// Bulk breaks: 1–4 cartons at one rate, 5–9 lower, 10+ lower again.
+/// Stored as "at this quantity or more, this price".
+model QuantityBreak {
+  id          String  @id @default(cuid())
+  productId   String
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  minQuantity Int
+  pricePence  Int
+
+  createdAt DateTime @default(now())
+
+  @@unique([productId, minQuantity])
+  @@index([productId, minQuantity])
+}
+
+/// Not implemented in v1. Present so the pricing engine's promotion input and
+/// the eventual admin screens need no migration (LEVEL-4 §23).
+model Promotion {
+  id   String        @id @default(cuid())
+  name String
+  code String?       @unique
+  type PromotionType
+
+  /// Percentage in basis points, or a fixed price in pence, per `type`.
+  value Int
+
+  productId  String?
+  product    Product?  @relation(fields: [productId], references: [id])
+  categoryId String?
+  category   Category? @relation(fields: [categoryId], references: [id])
+
+  startsAt DateTime
+  endsAt   DateTime
+  active   Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active, startsAt, endsAt])
+}
+
+// ---------------------------------------------------------------------------
+// Basket
+// ---------------------------------------------------------------------------
+
+/// One basket per logged-in person, not per business — an owner and a manager
+/// building an order at the same time must not overwrite each other.
+model Basket {
+  id     String       @id @default(cuid())
+  userId String       @unique
+  user   CustomerUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lines BasketLine[]
+}
+
+model BasketLine {
+  id        String  @id @default(cuid())
+  basketId  String
+  basket    Basket  @relation(fields: [basketId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  quantity Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([basketId, productId])
+}
+
+model Favourite {
+  id         String   @id @default(cuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([customerId, productId])
+}
+
+// ---------------------------------------------------------------------------
+// Orders
+// ---------------------------------------------------------------------------
+
+model Order {
+  id          String @id @default(cuid())
+  /// ANAID-2026-000001.
+  orderNumber String @unique
+
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  /// Which person placed it. Never deleted, so this always resolves.
+  placedById String?
+  placedBy   CustomerUser? @relation(fields: [placedById], references: [id])
+
+  status OrderStatus @default(RECEIVED)
+
+  // Addresses are COPIED onto the order, not referenced (LEVEL-4 §5). A customer
+  // who moves premises must not appear to have had old orders delivered there.
+  deliveryName         String
+  deliveryLine1        String
+  deliveryLine2        String?
+  deliveryCity         String
+  deliveryCounty       String?
+  deliveryPostcode     String
+  deliveryCountry      String  @default("GB")
+  deliveryInstructions String?
+
+  billingName     String
+  billingLine1    String
+  billingLine2    String?
+  billingCity     String
+  billingCounty   String?
+  billingPostcode String
+  billingCountry  String  @default("GB")
+
+  contactPhone String
+  poReference  String?
+  preferredDeliveryDate DateTime?
+
+  // Every figure below is calculated on the server at checkout and again on any
+  // amendment. Nothing sent by the customer's device is trusted (LEVEL-4 §15).
+  subtotalPence       Int
+  vatTotalPence       Int
+  deliveryChargePence Int
+  totalPence          Int
+
+  paymentMethod PaymentMethod @default(ACCOUNT)
+
+  placedAt     DateTime  @default(now())
+  confirmedAt  DateTime?
+  dispatchedAt DateTime?
+  deliveredAt  DateTime?
+  actualDeliveryDate DateTime?
+
+  cancelledAt     DateTime?
+  cancellationReason String?
+
+  /// Visible to the customer.
+  customerNotes String?
+  /// Staff only.
+  internalNotes String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  lines          OrderLine[]
+  statusChanges  OrderStatusChange[]
+  stockMovements StockMovement[]
+
+  @@index([customerId, placedAt])
+  @@index([status, placedAt])
+  @@index([placedAt])
+}
+
+/// Order lines freeze everything about the sale at the moment it was made:
+/// the price charged, the VAT rate applied, and the product's name and code as
+/// they read that day.
+model OrderLine {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  sku         String
+  name        String
+  packSummary String?
+
+  quantity        Int
+  unitPricePence  Int
+  priceSource     PriceSource
+  /// The list price at the time, so a discount can be shown and audited.
+  standardPricePence Int
+  vatRateBasisPoints Int
+
+  lineNetPence   Int
+  lineVatPence   Int
+  lineTotalPence Int
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([productId])
+}
+
+/// Every status change is recorded, with who made it (LEVEL-4 §16).
+model OrderStatusChange {
+  id      String @id @default(cuid())
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  fromStatus OrderStatus?
+  toStatus   OrderStatus
+
+  staffId String?
+  staff   Staff?  @relation(fields: [staffId], references: [id])
+  /// Set instead of staffId when the customer cancelled it themselves.
+  byCustomerUserId String?
+
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([orderId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Stock
+// ---------------------------------------------------------------------------
+
+model StockMovement {
+  id        String  @id @default(cuid())
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+
+  reason StockMovementReason
+  /// Signed. Negative reduces the figure named by `reason`.
+  quantity Int
+
+  orderId String?
+  order   Order?  @relation(fields: [orderId], references: [id])
+
+  staffId String?
+  staff   Staff?  @relation(fields: [staffId], references: [id])
+
+  /// Snapshot after the movement, so history can be read without replaying it.
+  resultingOnHand   Int
+  resultingReserved Int
+
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([productId, createdAt])
+  @@index([orderId])
+}
+
+// ---------------------------------------------------------------------------
+// Notifications, settings, audit
+// ---------------------------------------------------------------------------
+
+model Notification {
+  id       String               @id @default(cuid())
+  audience NotificationAudience
+
+  /// Set for customer notifications.
+  customerId String?
+  customer   Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  /// Set for notifications aimed at one member of staff; null means all staff
+  /// holding the relevant role.
+  staffId String?
+  staff   Staff?  @relation(fields: [staffId], references: [id], onDelete: Cascade)
+
+  type  String
+  title String
+  body  String
+  link  String?
+
+  readAt DateTime?
+  /// Set when email delivery actually happened. Null while email is switched off.
+  emailedAt DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([customerId, createdAt])
+  @@index([audience, createdAt])
+}
+
+/// Everything configurable lives here rather than in code: VAT, delivery
+/// threshold and charge, minimum order value, the OTP rules, company details,
+/// and whether email is switched on (LEVEL-4 §29).
+model Setting {
+  key         String      @id
+  value       String
+  type        SettingType @default(STRING)
+  group       String      @default("general")
+  label       String
+  description String?
+
+  updatedAt DateTime @updatedAt
+}
+
+/// Atomic allocation of the visible numbers: customer numbers (ANAID-C00001)
+/// and order numbers (ANAID-2026-000001, one sequence per year). Incremented
+/// inside the same transaction as the record it numbers, so two simultaneous
+/// approvals can never be handed the same number.
+model Counter {
+  key   String @id
+  value Int    @default(0)
+}
+
+/// Written from day one. The reading UI is deferred to a later phase, but the
+/// record must exist from the first approval onwards (LEVEL-4 §30).
+model AuditLog {
+  id String @id @default(cuid())
+
+  actorType  ActorType
+  actorId    String?
+  /// Denormalised name or email, so the entry still reads correctly years later.
+  actorLabel String
+
+  action     String
+  entityType String
+  entityId   String?
+
+  before Json?
+  after  Json?
+
+  ipAddress String?
+  userAgent String?
+
+  createdAt DateTime @default(now())
+
+  @@index([entityType, entityId, createdAt])
+  @@index([actorType, actorId, createdAt])
+  @@index([createdAt])
+}
