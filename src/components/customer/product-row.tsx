@@ -29,11 +29,17 @@ import type { PriceResult } from '@/lib/pricing'
 
 /**
  * When each column has earned its place, measured against the table's column.
- * The minimum is not among them: it decides whether a line can be ordered at
- * all, so it stands with the price and never drops.
+ *
+ * The minimum used to be exempt — it decides whether a line can be ordered at
+ * all, so it stood with the price and never dropped. On a phone that principle
+ * was costing it a fifth of the table to print "1 carton" down every row, while
+ * the product name it had taken the room from wrapped onto three lines. It
+ * drops now like the others, and the fact moves into the line of small print
+ * under the name, where it is still said on every row and costs nothing.
  */
 const AT = {
   pack: '@lg:table-cell',
+  min: '@md:table-cell',
   carton: '@3xl:table-cell',
   stock: '@4xl:table-cell',
 } as const
@@ -75,7 +81,18 @@ export function ProductRow({
               {product.name}
             </span>
             <span className="tnum mt-0.5 block text-micro text-ink-faint [overflow-wrap:anywhere]">
-              {product.sku} · {tidyName(product.category.name)}
+              {product.sku}
+              {/* The department is worth naming once there is room for it. On a
+                  narrow phone it is nearly always the thing the customer just
+                  filtered by, and printing it here wrapped the small print onto
+                  a third line to say something they already knew. */}
+              <span className="hidden @md:inline"> · {tidyName(product.category.name)}</span>
+              {/* What the dropped column was saying, said here instead. */}
+              <span className="@md:hidden">
+                {' '}
+                · Min {product.minOrderQuantity} {product.sellUnit}
+                {product.minOrderQuantity === 1 ? '' : 's'}
+              </span>
               {product.featured && <span className="font-medium text-accent"> · Popular</span>}
             </span>
           </span>
@@ -83,7 +100,7 @@ export function ProductRow({
       </th>
 
       <Cell at={AT.pack}>{product.packSize ?? '—'}</Cell>
-      <Cell>
+      <Cell at={AT.min}>
         {product.minOrderQuantity} {product.sellUnit}
         {product.minOrderQuantity === 1 ? '' : 's'}
       </Cell>
@@ -153,7 +170,7 @@ export function ProductRowHeader() {
         Product
       </th>
       <HeadCell at={AT.pack}>Pack</HeadCell>
-      <HeadCell>Min order</HeadCell>
+      <HeadCell at={AT.min}>Min order</HeadCell>
       <HeadCell at={AT.carton}>Per carton</HeadCell>
       <HeadCell at={AT.stock}>Stock</HeadCell>
       <th scope="col" className="eyebrow w-px py-2.5 pl-4 text-right whitespace-nowrap">

@@ -4,6 +4,7 @@ import { getCustomerSession } from '@/lib/auth/session'
 import { canSeePrices } from '@/lib/permissions'
 import { Wordmark } from '@/components/ui/wordmark'
 import { BasketButton } from '@/components/customer/basket-button'
+import { AppBar } from '@/components/customer/app-bar'
 
 /**
  * The customer header.
@@ -27,9 +28,9 @@ export async function SiteHeader({ query }: { query?: string }) {
   const approved = session ? canSeePrices(session.customer.status) : false
 
   return (
-    <header className="sticky top-0 z-30">
-      <div className="rail">
-        <div className="mx-auto flex h-full max-w-6xl items-center gap-5 px-4 sm:px-6 lg:px-8">
+    <AppBar>
+      <div className="rail px-safe">
+        <div className="mx-auto flex h-full max-w-6xl items-center gap-3 px-4 sm:gap-5 sm:px-6 lg:px-8">
           <Link href="/" className="group mr-auto" aria-label="ANAID Quality Disposables Limited — home">
             <Wordmark size="sm" />
           </Link>
@@ -41,7 +42,7 @@ export async function SiteHeader({ query }: { query?: string }) {
             <HeaderLink href="/contact">Contact</HeaderLink>
           </nav>
 
-          <div className="flex items-center gap-3.5">
+          <div className="flex items-center gap-1.5 sm:gap-3.5">
             {approved && <BasketButton />}
 
             {session ? (
@@ -51,7 +52,7 @@ export async function SiteHeader({ query }: { query?: string }) {
             ) : (
               <Link
                 href="/login"
-                className="inline-flex h-10 items-center rounded-full border border-hairline px-4.5 text-base font-medium transition-[background-color,border-color,color] duration-150 hover:border-ink-muted hover:bg-sunken-soft"
+                className="inline-flex h-10 shrink-0 items-center rounded-full border border-hairline px-4 text-small font-medium transition-[background-color,border-color,color] duration-150 hover:border-ink-muted hover:bg-sunken-soft sm:px-4.5 sm:text-base"
               >
                 Sign in
               </Link>
@@ -60,10 +61,10 @@ export async function SiteHeader({ query }: { query?: string }) {
         </div>
       </div>
 
-      <div className="border-b border-hairline bg-surface px-4 py-2.5 sm:px-6 md:hidden">
+      <div className="px-safe [--gutter:1rem] sm:[--gutter:1.5rem] border-b border-hairline bg-surface py-2.5 md:hidden">
         <SearchField query={query} />
       </div>
-    </header>
+    </AppBar>
   )
 }
 

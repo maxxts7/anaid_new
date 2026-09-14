@@ -69,7 +69,11 @@ export function QuantityStepper({
               ? `Order ${name}, minimum ${minOrderQuantity} ${sellUnit}s`
               : `Order ${name}`
           }
-          className="inline-flex size-9 items-center justify-center rounded-full border border-hairline-strong bg-surface text-ink transition-[background-color,border-color,color] duration-150 hover:border-accent hover:text-accent disabled:pointer-events-none disabled:opacity-45"
+          // `touch-target` grows what a finger can hit to 44px without growing
+          // the circle, which at 36px is right for a pointer and short of what
+          // either phone platform asks for. This is the control pressed more
+          // often than anything else in the application.
+          className="touch-target inline-flex size-9 items-center justify-center rounded-full border border-hairline-strong bg-surface text-ink transition-[background-color,border-color,color] duration-150 hover:border-accent hover:text-accent disabled:pointer-events-none disabled:opacity-45"
         >
           <Plus className="size-4" aria-hidden />
         </button>
@@ -90,7 +94,9 @@ export function QuantityStepper({
           aria-label={
             quantity <= minOrderQuantity ? `Remove ${name} from basket` : `One fewer ${sellUnit}`
           }
-          className="flex size-9 items-center justify-center rounded-full text-accent transition-colors hover:text-accent-hover"
+          // The grown targets stay 16px apart — the width of the number between
+          // them — so a thumb aiming at one cannot reach the other.
+          className="touch-target flex size-9 items-center justify-center rounded-full text-accent transition-colors hover:text-accent-hover"
         >
           <Minus className="size-4" aria-hidden />
         </button>
@@ -111,7 +117,7 @@ export function QuantityStepper({
             basket.setQuantity(line, quantity + 1)
           }}
           aria-label={`One more ${sellUnit}`}
-          className="flex size-9 items-center justify-center rounded-full text-accent transition-colors hover:text-accent-hover disabled:opacity-45"
+          className="touch-target flex size-9 items-center justify-center rounded-full text-accent transition-colors hover:text-accent-hover disabled:opacity-45"
         >
           <Plus className="size-4" aria-hidden />
         </button>

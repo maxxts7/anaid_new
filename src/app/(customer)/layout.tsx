@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { SiteHeader } from '@/components/customer/site-header'
 import { StatusBanner } from '@/components/customer/status-banner'
 import { BottomNav } from '@/components/customer/bottom-nav'
+import { BasketBar } from '@/components/customer/basket-bar'
 import { getCustomerSession } from '@/lib/auth/session'
 import { getSettings } from '@/lib/settings'
 import { canSeePrices } from '@/lib/permissions'
@@ -30,28 +31,41 @@ export default async function CustomerLayout({ children }: { children: React.Rea
           marked off by a rule and by the drop in type size rather than by a
           block of colour, which is the whole trick of this layout: contrast
           comes from space and weight, not from filling areas in. */}
-      <footer className="border-t border-hairline px-4 pt-12 pb-28 md:pb-12">
+      {/* The page has to end above the fixed furniture. The footer carries that
+          clearance rather than the main element, because it is what the bottom
+          of the page actually is — and `pb-page` measures it from the same
+          variable the bars position themselves with, so the three cannot drift
+          apart. */}
+      <footer className="pb-page px-safe [--gutter:1rem] border-t border-hairline pt-12">
         <div className="mx-auto grid max-w-6xl gap-10 text-small sm:grid-cols-2 lg:grid-cols-4">
           <div className="max-w-sm">
             <Wordmark />
             <p className="mt-4 text-ink-muted">{ONE_STOP}</p>
           </div>
 
+          {/* A footer link is 13px of text, which as a target is about a third
+              of what a thumb needs. The rows carry their own padding so the
+              target is the height of the row rather than the height of the
+              lettering, and the gap between rows comes down to match — the
+              links end up further apart than they were, while the block as a
+              whole is the same size. The pseudo-element trick used elsewhere
+              will not do here: at this spacing 44px boxes would overlap each
+              other, and tapping About would sometimes get you Contact. */}
           <div>
             <h2 className="eyebrow">Shop</h2>
-            <ul className="mt-4 flex flex-col gap-2.5 text-ink-muted">
+            <ul className="mt-3 flex flex-col gap-0.5 text-ink-muted">
               <li>
-                <Link href="/products" className="hover:text-ink">
+                <Link href="/products" className="inline-block py-1.5 hover:text-ink">
                   All products
                 </Link>
               </li>
               <li>
-                <Link href="/register" className="hover:text-ink">
+                <Link href="/register" className="inline-block py-1.5 hover:text-ink">
                   Open a trade account
                 </Link>
               </li>
               <li>
-                <a href={BROCHURE} className="hover:text-ink" download>
+                <a href={BROCHURE} className="inline-block py-1.5 hover:text-ink" download>
                   Download brochure (PDF)
                 </a>
               </li>
@@ -60,14 +74,14 @@ export default async function CustomerLayout({ children }: { children: React.Rea
 
           <div>
             <h2 className="eyebrow">Company</h2>
-            <ul className="mt-4 flex flex-col gap-2.5 text-ink-muted">
+            <ul className="mt-3 flex flex-col gap-0.5 text-ink-muted">
               <li>
-                <Link href="/about" className="hover:text-ink">
+                <Link href="/about" className="inline-block py-1.5 hover:text-ink">
                   About us
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-ink">
+                <Link href="/contact" className="inline-block py-1.5 hover:text-ink">
                   Contact us
                 </Link>
               </li>
@@ -76,15 +90,21 @@ export default async function CustomerLayout({ children }: { children: React.Rea
 
           <div>
             <h2 className="eyebrow">Get in touch</h2>
-            <address className="mt-4 flex flex-col gap-2.5 not-italic text-ink-muted">
-              <span>{settings['company.address']}</span>
-              <a href={`mailto:${settings['company.email']}`} className="hover:text-ink">
+            <address className="mt-3 flex flex-col gap-0.5 not-italic text-ink-muted">
+              <span className="py-1.5">{settings['company.address']}</span>
+              <a
+                href={`mailto:${settings['company.email']}`}
+                className="inline-block py-1.5 hover:text-ink"
+              >
                 {settings['company.email']}
               </a>
-              <a href={`tel:${settings['company.phone'].replace(/\s/g, '')}`} className="tnum hover:text-ink">
+              <a
+                href={`tel:${settings['company.phone'].replace(/\s/g, '')}`}
+                className="tnum inline-block py-1.5 hover:text-ink"
+              >
                 {settings['company.phone']}
               </a>
-              <span className="tnum text-ink-faint">{OPENING_HOURS}</span>
+              <span className="tnum py-1.5 text-ink-faint">{OPENING_HOURS}</span>
             </address>
           </div>
         </div>
@@ -106,6 +126,9 @@ export default async function CustomerLayout({ children }: { children: React.Rea
         </div>
       </footer>
 
+      {/* The phone's answer to the margin panel: the running total, carried
+          across the bottom of every shopping screen. */}
+      {approved && <BasketBar />}
       <BottomNav showBasket={approved} />
     </div>
     </BasketProvider>

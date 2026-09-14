@@ -219,6 +219,213 @@ textarea,
 }
 
 /* ---------------------------------------------------------------------------
+   Touch
+
+   The rules that decide whether this reads as an application or as a website
+   someone opened on a phone. None of them change the layout; together they are
+   most of the difference.
+
+   The tells a browser leaves on a touch screen are: a grey box flashed over
+   whatever you press, a third of a second of nothing while it waits to see if
+   you meant to double-tap and zoom, the page bouncing past its own end, a
+   pull-down that reloads and loses your basket, and the label of a button
+   turning blue and selected when your thumb rests on it. Each is switched off
+   below, and the one thing they were collectively providing — some sign that
+   the press registered — is put back deliberately, because the whole of this
+   interface's feedback is currently written inside `@media (hover: hover)` and
+   a finger has no hover.
+--------------------------------------------------------------------------- */
+
+html {
+  /* The flash of grey iOS and Android paint over a pressed link. Every control
+     here answers a press itself, so this is noise on top of an answer. */
+  -webkit-tap-highlight-color: transparent;
+
+  /* Anchors and focus land below the sticky header rather than under it. */
+  scroll-padding-top: 5rem;
+}
+
+body {
+  /* No rubber band at the ends of the page and no pull-to-refresh. On a
+     catalogue the second of those is the dangerous one: a customer flicking up
+     through a hundred and thirty products, reaching the top and flicking once
+     more would reload the page. */
+  overscroll-behavior-y: none;
+
+  /* A phone has no horizontal scrollbar to warn you, so a single element a few
+     pixels too wide silently makes the whole page slide sideways. `clip` rather
+     than `hidden` because `hidden` on the body makes every `position: sticky`
+     inside it stop sticking. */
+  overflow-x: clip;
+}
+
+/* Removes the wait-and-see delay before a tap is delivered, without taking
+   pinch-zoom away from the page — `manipulation` switches off double-tap zoom
+   only. Applied to the things that are pressed rather than globally, so a tap
+   on the page itself still behaves normally. */
+a,
+button,
+label,
+summary,
+input,
+select,
+textarea,
+[role='button'],
+[role='tab'] {
+  touch-action: manipulation;
+}
+
+/* Holding a thumb on a button should press it, not select its label and raise
+   the copy/paste bar. Text the customer might genuinely want — a price, a code,
+   an address — is untouched. */
+button,
+[role='button'],
+.tab,
+.tab-major,
+.switch-half {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Something has to answer a press.
+
+   Everything visual in this interface responds to `:hover`, and the hover rules
+   are correctly fenced off behind `@media (hover: hover)` so that a phone does
+   not leave them stuck on after a tap. The consequence is that on a phone
+   nothing responds at all: you press a category and the only evidence is the
+   grid changing a moment later. These give the press itself an answer, and only
+   where there is no pointer to hover with. */
+@media (hover: none) {
+  a:active,
+  button:active,
+  [role='button']:active {
+    /* Small enough to read as the surface taking the press rather than as an
+       animation playing. */
+    transform: scale(0.97);
+  }
+
+  /* A pill or a tile has room to dim; a word in a rail does not, so it takes
+     the accent instead. */
+  .lift:active {
+    border-color: color-mix(in srgb, var(--color-accent) 30%, var(--color-hairline));
+    transform: scale(0.985);
+  }
+
+  .tab:active,
+  .tab-major:active,
+  .icon-btn:active {
+    color: var(--color-accent);
+    transform: none;
+  }
+
+  .icon-btn:active {
+    background: var(--color-accent-soft);
+  }
+}
+
+/* A finger is not a cursor.
+
+   Apple asks for 44px and Android for 48dp, and several controls here are 32 or
+   36 — sized for a mouse, and correct for one. Rather than growing the visible
+   control, which would coarsen a layout whose whole character is how little it
+   draws, the target is grown past the ink with a pseudo-element: the circle
+   stays 32px and the thing you can hit is 44.
+
+   Only on a coarse pointer, so a mouse still gets the compact interface. */
+@media (pointer: coarse) {
+  .icon-btn,
+  .switch-half,
+  .touch-target {
+    position: relative;
+  }
+
+  .icon-btn::after,
+  .switch-half::after,
+  .touch-target::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+    content: '';
+  }
+}
+
+/* Rails that are swiped rather than scrolled. `contain` stops a flick that runs
+   off the end of a category rail from carrying the page with it, which is what
+   makes a horizontal rail feel like a separate surface instead of a trap. */
+.tablist,
+.table-scroll {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+
+/* ---------------------------------------------------------------------------
+   The edges of the screen
+
+   With `viewport-fit=cover` the page paints into the notch and behind the home
+   indicator, which is what lets a fixed bar's own colour run to the bottom of
+   the glass instead of stopping short in a white strip. Everything fixed to an
+   edge then has to pad itself back out, and these name that padding so it is
+   the same everywhere.
+--------------------------------------------------------------------------- */
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* The notch, in landscape.
+ *
+ * This has to be written as a `max()` against the element's own gutter rather
+ * than as a plain `padding-inline`. Unlayered CSS outranks everything Tailwind
+ * emits — the same trap the `border-color` rule at the top of this file fell
+ * into — so a bare `padding-left` here does not add the inset to a `px-4`, it
+ * silently replaces it, and the element loses its side padding altogether on
+ * every phone where the inset is zero.
+ *
+ * So the gutter comes in as a variable and the larger of the two wins. Set it
+ * where it is used, with the responsive variants it needs:
+ *
+ *   px-safe [--gutter:1rem] sm:[--gutter:1.5rem]
+ */
+.px-safe {
+  padding-left: max(var(--gutter, 0px), env(safe-area-inset-left));
+  padding-right: max(var(--gutter, 0px), env(safe-area-inset-right));
+}
+
+/* The height the bottom navigation occupies, so a page can end above it and a
+   bar can sit on top of it. One number, defined once: the nav's own 3.5rem —
+   the tab-bar height both phone platforms settle on — plus whatever the device
+   reserves below it for the home indicator.
+
+   It goes to zero from the tablet breakpoint up, where the navigation is not
+   rendered at all. Everything positioned against it then needs no breakpoint of
+   its own: the arithmetic simply comes out flat. */
+:root {
+  --bottom-nav: calc(3.5rem + env(safe-area-inset-bottom));
+}
+
+@media (min-width: 768px) {
+  :root {
+    --bottom-nav: 0px;
+  }
+}
+
+/* Where a page stops. Clear of the navigation and of the basket bar that may be
+   riding on top of it, and back to an ordinary margin once neither exists. */
+.pb-page {
+  padding-bottom: calc(var(--bottom-nav) + 5.5rem);
+}
+
+@media (min-width: 768px) {
+  .pb-page {
+    padding-bottom: 3rem;
+  }
+}
+
+/* ---------------------------------------------------------------------------
    The eyebrow
 
    A small capitalised label above a heading, standing in for the boxed section
@@ -243,6 +450,24 @@ textarea,
    customer is looking at goes soft every time they scroll. The only decoration
    is a hair of accent laid along its bottom edge.
 --------------------------------------------------------------------------- */
+
+/* Rolled up out of sight while the customer scrolls down, and back the instant
+   they scroll up — see `app-bar.tsx` for why, and for what sets the attribute.
+
+   Only on a phone. Above the tablet breakpoint the rule simply does not exist,
+   so a window dragged wider can never be left with its header hidden, whatever
+   state the component is in. */
+@media (max-width: 767px) {
+  .app-bar {
+    transition: transform 220ms cubic-bezier(0.2, 0, 0, 1);
+    will-change: transform;
+  }
+
+  .app-bar[data-hidden] {
+    /* Past 100% so the accent hairline along the bottom edge goes with it. */
+    transform: translateY(-102%);
+  }
+}
 
 .rail {
   position: relative;
@@ -348,10 +573,19 @@ textarea,
    Tabs
 
    The catalogue is browsed through two rails of these, one nested inside the
-   other. They are deliberately not chips: a filter here is a word on a rule,
-   and the only thing marking a chosen one is weight, ink and a two-pixel accent
-   underline. A rail of twelve categories set this way reads as a list of names;
-   the same twelve set as filled chips reads as a wall of boxes.
+   other. Where they run horizontally they are deliberately not chips: a filter
+   is a word on a rule, and the only thing marking a chosen one is weight, ink
+   and a two-pixel accent underline. A rail of twelve categories set this way
+   reads as a list of names; the same twelve set as filled chips reads as a wall
+   of boxes.
+
+   The vertical department index is the exception, and earns it. Stood on its
+   end it is a menu rather than a rail, its rows are full-width, and more than
+   one of them can be on at once — so a chosen row there takes a wash of the
+   brand green across it. An underline can mark one thing in a line of names;
+   five open departments down a column need to be findable at a glance, and a
+   tint is what does that. It is a wash and not a fill: the lettering on top of
+   it is the same near-black it was.
 
    More than one can be on at once, so they carry `aria-pressed` rather than
    `aria-selected` — the mark below keys off that.
@@ -359,6 +593,9 @@ textarea,
    `.tab-major` is the top level and `.tab` the level beneath it, told apart by
    size and by the underline: the parent takes a solid ink rule, the child an
    accent one, so at a glance you can see which of the two rails you are on.
+   That distinction is only needed where the two are stacked horizontally, which
+   is a phone; in the vertical index the orientation already says which is
+   which, and the marker goes green with the row.
 --------------------------------------------------------------------------- */
 
 .tablist {
@@ -414,12 +651,45 @@ textarea,
     gap: 0.75rem;
     margin-right: -1px;
     margin-bottom: 0;
-    padding: 0.4375rem 1.5rem 0.4375rem 0;
+    /* The left padding is the room the tint on a chosen department needs to
+       stand off its own lettering. The eyebrow above the rail is indented to
+       match, so the column still reads as a label over a list. */
+    padding: 0.4375rem 1.5rem 0.4375rem 0.625rem;
+    /* Rounded where it meets the page, square where it meets the rail — so a
+       tinted department reads as a tab attached to the rule rather than as a
+       pill floating beside it. */
+    border-radius: var(--radius-sm) 0 0 var(--radius-sm);
     font-size: var(--text-base);
     letter-spacing: -0.006em;
     text-align: left;
     white-space: normal;
     text-wrap: balance;
+  }
+
+  /* The chosen department, tinted.
+   *
+   * ANAID's own green, laid on at about a seventh of its strength and drifting
+   * across to the teal on the way to the rail — the same short travel the mark
+   * makes, and the same one the primary button and the soft rules make. At this
+   * weight it is a wash rather than a fill: the name on top of it is still
+   * near-black ink on near-white paper, so nothing is harder to read than it
+   * was, and the row is findable from the far side of the page.
+   */
+  .tablist-vertical .tab-major[aria-pressed='true'] {
+    background-image: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-accent-3) 17%, transparent) 0%,
+      color-mix(in srgb, var(--color-accent) 9%, transparent) 100%
+    );
+  }
+
+  /* A faint neutral wash under the cursor, so the green reads as chosen rather
+     than as merely pointed at. Without it a row of plain names beside one
+     filled row leaves hovering with nothing to say. */
+  @media (hover: hover) {
+    .tablist-vertical .tab-major:not([aria-pressed='true']):hover {
+      background: var(--color-sunken-soft);
+    }
   }
 
   .tablist-vertical .tab-major::after {
@@ -428,6 +698,20 @@ textarea,
     width: 2px;
     height: auto;
     border-radius: 2px 0 0 2px;
+  }
+
+  /* The marker at the tinted edge goes green with it. The ink rule it carries
+     elsewhere is there to tell the department rail apart from the section rail
+     when the two are stacked horizontally on a phone; stood on its end beside a
+     horizontal one, the orientation already says which is which, and an ink bar
+     on the end of a green wash only looks like a leftover. */
+  .tablist-vertical .tab-major[aria-pressed='true']::after {
+    background: linear-gradient(180deg, var(--color-accent-3), var(--color-accent));
+  }
+
+  /* The count belongs to the tinted row now, so it takes its colour from it. */
+  .tablist-vertical .tab-major[aria-pressed='true'] > .tab-n {
+    color: var(--color-accent);
   }
 
   .tablist-vertical .tab-n {
@@ -512,6 +796,32 @@ textarea,
 .tab:focus-visible {
   outline-offset: 4px;
   border-radius: 4px;
+}
+
+/* The rails on a phone.
+ *
+ * These are how the shop is navigated on a touch screen, and they were the
+ * shortest targets in it — 40px for a department and 32px for a section against
+ * the 44px both platforms ask for. The height is made up above the text rather
+ * than below it: the rail is bottom-aligned and the marker under a chosen tab
+ * sits on the rule, so padding added at the top grows the target upward and
+ * leaves the underline exactly where it was.
+ *
+ * It has to come after the `padding` shorthands above, not with the rest of the
+ * touch rules near the top of this file, or the shorthand resets it.
+ *
+ * Phones only. From the tablet breakpoint the department rail is the vertical
+ * index down the side of the page, which sets its own padding and is already
+ * tall enough.
+ */
+@media (pointer: coarse) and (max-width: 767px) {
+  .tab-major {
+    padding-top: 4px;
+  }
+
+  .tab {
+    padding-top: 12px;
+  }
 }
 
 /* ---------------------------------------------------------------------------

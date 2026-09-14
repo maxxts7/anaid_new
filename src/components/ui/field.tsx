@@ -43,11 +43,38 @@ export function Textarea({ className, ...props }: React.ComponentProps<'textarea
   return <textarea className={cn(control, 'min-h-24 py-2.5', className)} {...props} />
 }
 
+/**
+ * A select, with its own chevron.
+ *
+ * `appearance-none` is here so the control matches every other field rather
+ * than wearing whatever each platform draws — but on its own it takes the
+ * native arrow away and puts nothing back, which leaves a dropdown looking
+ * exactly like a text input. On a phone that is the difference between a
+ * customer picking a delivery address and a customer wondering why they cannot
+ * type in the box. The mark below is the replacement, and the extra right
+ * padding is the room it sits in.
+ */
 export function Select({ className, children, ...props }: React.ComponentProps<'select'>) {
   return (
-    <select className={cn(control, 'h-11 appearance-none pr-8', className)} {...props}>
-      {children}
-    </select>
+    <span className="relative block">
+      <select className={cn(control, 'h-11 appearance-none pr-10', className)} {...props}>
+        {children}
+      </select>
+      <svg
+        viewBox="0 0 16 16"
+        aria-hidden
+        className="pointer-events-none absolute top-1/2 right-3.5 size-4 -translate-y-1/2 text-ink-faint"
+      >
+        <path
+          d="M4 6.5 8 10.5 12 6.5"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.75"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </span>
   )
 }
 

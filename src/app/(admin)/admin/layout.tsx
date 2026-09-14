@@ -47,7 +47,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-dvh lg:grid lg:grid-cols-[232px_1fr]">
-      <aside className="border-b border-hairline bg-surface lg:sticky lg:top-0 lg:h-dvh lg:border-r lg:border-b-0">
+      <aside className="px-safe sticky top-0 z-30 border-b border-hairline bg-surface lg:h-dvh lg:border-r lg:border-b-0">
         <div className="flex items-center justify-between gap-2 px-4 py-3 lg:block">
           <Link href="/admin" className="block">
             <span className="text-lead font-bold tracking-[-0.03em]">
@@ -55,6 +55,17 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             </span>
             <span className="ml-2 text-micro text-ink-muted lg:ml-0 lg:block">Staff dashboard</span>
           </Link>
+
+          {/* Sign out used to live only in the panel below, which is hidden
+              below the desktop breakpoint — so a warehouse or delivery user,
+              who is on a phone by definition, had no way to sign out at all.
+              Here it rides in the bar beside the name, and gives way to the
+              fuller panel once there is a sidebar to put that panel in. */}
+          <form action={signOutStaff} className="lg:hidden">
+            <Button type="submit" variant="secondary" size="sm">
+              Sign out
+            </Button>
+          </form>
         </div>
 
         <AdminNav items={items} />

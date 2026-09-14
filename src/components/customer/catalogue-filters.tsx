@@ -247,9 +247,12 @@ export function CatalogueFilters({
             head of this one. From the wide breakpoint it moves to the right,
             where the eye ends up after reading a row of products. Both are the
             same component on the same store, so they cannot drift apart. */}
-        <BasketPanel className="mb-6 hidden border-b border-hairline pb-6 md:block xl:hidden" />
+        <BasketPanel className="mb-6 hidden border-b border-hairline pb-6 md:block md:pl-2.5 xl:hidden" />
 
-        <div className="mb-3 hidden items-baseline justify-between gap-3 md:flex">
+        {/* Indented to the same 10px as the department names below, which carry
+            left padding so the tint on a chosen one has room to stand off its
+            lettering. The label has to move with the list it labels. */}
+        <div className="mb-3 hidden items-baseline justify-between gap-3 md:flex md:pl-2.5">
           <p className="eyebrow">Departments</p>
           {filtered && (
             <button

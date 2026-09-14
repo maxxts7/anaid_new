@@ -25,12 +25,17 @@ export function Wordmark({
 
   return (
     <span className={cn('flex items-center', small ? 'gap-2.5' : 'gap-3', className)}>
+      {/* The bar sizing steps down on a phone. At 390px the lockup at its full
+          size takes two thirds of the width of the header and leaves the basket
+          and the account crowded into the last third; a step down the same
+          scale the type uses gives them room without the name reading as
+          small print. */}
       <img
         src="/brand/logo-mark.png"
         alt=""
         width={42}
         height={28}
-        className={cn('w-auto', small ? 'h-7' : 'h-10')}
+        className={cn('w-auto', small ? 'h-6 sm:h-7' : 'h-10')}
       />
 
       <span className="flex flex-col">
@@ -41,7 +46,7 @@ export function Wordmark({
         <span
           className={cn(
             'font-bold tracking-[-0.02em] text-ink transition-colors group-hover:text-accent',
-            small ? 'text-read' : 'text-lead',
+            small ? 'text-lead sm:text-read' : 'text-lead',
             'leading-none'
           )}
         >
@@ -60,7 +65,7 @@ export function Wordmark({
           className={cn(
             'font-semibold text-ink-muted',
             small
-              ? 'mt-[5px] -mr-[0.12em] text-[0.675rem] tracking-[0.12em]'
+              ? 'mt-1 -mr-[0.12em] text-[0.6156rem] tracking-[0.12em] sm:mt-[5px] sm:text-[0.675rem]'
               : 'mt-1.5 -mr-[0.12em] text-[0.6156rem] tracking-[0.12em]',
             'leading-none'
           )}
