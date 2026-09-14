@@ -28,7 +28,11 @@ import type { CatalogueGroup } from '@/lib/catalogue'
  * "AND" would get wrong.
  *
  * A phone has no room for the column, so below the tablet breakpoint both
- * levels are rails you swipe, one above the other.
+ * levels are rails you swipe, one above the other — and there they are stuck to
+ * the top of the screen as a band rather than scrolling away with the page,
+ * because on a screen this size the menu would otherwise be off it for all but
+ * the first few rows of products. The band rides under the top bar and follows
+ * it up when it rolls away.
  *
  * Every product is rendered on the server and handed over already priced — the
  * cards arrive as nodes, not as data — so toggling a filter is a pass over what
@@ -237,44 +241,48 @@ export function CatalogueFilters({
 
   return (
     <div className="mt-9 md:mt-12 md:grid md:grid-cols-[minmax(0,12rem)_minmax(0,1fr)] md:gap-x-10 lg:grid-cols-[minmax(0,13.5rem)_minmax(0,1fr)] lg:gap-x-14 xl:grid-cols-[minmax(0,13.5rem)_minmax(0,1fr)_minmax(0,17rem)] xl:gap-x-12">
-      {/* The department index travels with the customer down a long grid, so
-          they can move between departments without scrolling back up. */}
-      {/* The column travels with the customer down a long grid. It scrolls
-          within itself when the basket and the index together outrun the
-          window, so the foot of the index is always reachable. */}
-      <div className="quiet-scroll md:sticky md:top-24 md:max-h-[calc(100dvh-7rem)] md:self-start">
-        {/* Until there is room for a column of its own, the basket rides at the
-            head of this one. From the wide breakpoint it moves to the right,
-            where the eye ends up after reading a row of products. Both are the
-            same component on the same store, so they cannot drift apart. */}
-        <BasketPanel className="mb-6 hidden border-b border-hairline pb-6 md:block md:pl-2.5 xl:hidden" />
+      {/* On a phone this is the band: both levels of the menu, stuck to the top
+          of the screen together. From the tablet breakpoint the wrapper
+          dissolves — `display: contents` — and its two children take their own
+          places in the grid, the departments down the left and the sections
+          across the top of the products. One set of controls either way, so
+          there is no second copy of the menu to fall out of step. */}
+      <div className="catalogue-band md:contents">
+        {/* The column travels with the customer down a long grid. It scrolls
+            within itself when the basket and the index together outrun the
+            window, so the foot of the index is always reachable. */}
+        <div className="quiet-scroll md:col-start-1 md:row-span-2 md:row-start-1 md:sticky md:top-24 md:max-h-[calc(100dvh-7rem)] md:self-start">
+          {/* Until there is room for a column of its own, the basket rides at the
+              head of this one. From the wide breakpoint it moves to the right,
+              where the eye ends up after reading a row of products. Both are the
+              same component on the same store, so they cannot drift apart. */}
+          <BasketPanel className="mb-6 hidden border-b border-hairline pb-6 md:block md:pl-2.5 xl:hidden" />
 
-        {/* Indented to the same 10px as the department names below, which carry
-            left padding so the tint on a chosen one has room to stand off its
-            lettering. The label has to move with the list it labels. */}
-        <div className="mb-3 hidden items-baseline justify-between gap-3 md:flex md:pl-2.5">
-          <p className="eyebrow">Departments</p>
-          {filtered && (
-            <button
-              type="button"
-              onClick={clear}
-              className="inline-flex items-center gap-1 text-micro font-medium text-ink-muted transition-colors hover:text-accent"
-            >
-              <X className="size-3" aria-hidden />
-              Clear
-            </button>
-          )}
+          {/* Indented to the same 10px as the department names below, which carry
+              left padding so the tint on a chosen one has room to stand off its
+              lettering. The label has to move with the list it labels. */}
+          <div className="mb-3 hidden items-baseline justify-between gap-3 md:flex md:pl-2.5">
+            <p className="eyebrow">Departments</p>
+            {filtered && (
+              <button
+                type="button"
+                onClick={clear}
+                className="inline-flex items-center gap-1 text-micro font-medium text-ink-muted transition-colors hover:text-accent"
+              >
+                <X className="size-3" aria-hidden />
+                Clear
+              </button>
+            )}
+          </div>
+
+          <FilterRail
+            variant="major"
+            label="Filter by department — more than one may be chosen"
+            options={departments}
+            onToggle={toggleTop}
+          />
         </div>
 
-        <FilterRail
-          variant="major"
-          label="Filter by department — more than one may be chosen"
-          options={departments}
-          onToggle={toggleTop}
-        />
-      </div>
-
-      <div className="min-w-0">
         {sectionChoices.length > 0 && (
           <FilterRail
             variant="minor"
@@ -283,9 +291,12 @@ export function CatalogueFilters({
             }
             options={sectionChoices}
             onToggle={toggleSection}
+            className="md:col-start-2 md:row-start-1"
           />
         )}
+      </div>
 
+      <div className="min-w-0 md:col-start-2 md:row-start-2">
         {/* Said out loud when the selection changes, because on a long grid the
             only other evidence that a filter did anything is off-screen. */}
         <div
@@ -360,7 +371,7 @@ export function CatalogueFilters({
         </div>
       </div>
 
-      <aside className="quiet-scroll hidden xl:sticky xl:top-24 xl:block xl:max-h-[calc(100dvh-7rem)] xl:self-start">
+      <aside className="quiet-scroll hidden xl:col-start-3 xl:row-span-2 xl:row-start-1 xl:sticky xl:top-24 xl:block xl:max-h-[calc(100dvh-7rem)] xl:self-start">
         <BasketPanel />
       </aside>
     </div>
@@ -383,11 +394,14 @@ function FilterRail({
   label,
   options,
   onToggle,
+  className,
 }: {
   variant: 'major' | 'minor'
   label: string
   options: Option[]
   onToggle: (key: string) => void
+  /** Where this rail sits in the grid, from the tablet breakpoint up. */
+  className?: string
 }) {
   const rail = useRef<HTMLDivElement>(null)
   const signature = options.map((option) => (option.on ? '1' : '0')).join('')
@@ -405,10 +419,15 @@ function FilterRail({
       ref={rail}
       role="group"
       aria-label={label}
+      // On a phone the rail runs the full width of the band it sits in and
+      // carries the page's gutter as padding, so a swiped rail scrolls from one
+      // edge of the glass to the other and still starts in line with the text.
+      // From the tablet breakpoint each rail is back in its own grid cell,
+      // where the cell supplies the gutter.
       className={
-        variant === 'major'
-          ? 'tablist tablist-vertical -mx-4 px-4 sm:mx-0 sm:px-0'
-          : 'tablist tablist-minor -mx-4 mt-4 px-4 sm:mx-0 sm:px-0 md:mt-0'
+        (variant === 'major'
+          ? 'tablist tablist-vertical px-4 sm:px-6 md:px-0'
+          : 'tablist tablist-minor px-4 sm:px-6 md:px-0') + (className ? ' ' + className : '')
       }
     >
       {options.map((option) => (

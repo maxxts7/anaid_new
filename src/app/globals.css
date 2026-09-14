@@ -724,6 +724,7 @@ button,
   border-bottom-color: var(--color-hairline-soft);
 }
 
+
 .tab-major,
 .tab {
   position: relative;
@@ -798,29 +799,195 @@ button,
   border-radius: 4px;
 }
 
-/* The rails on a phone.
- *
- * These are how the shop is navigated on a touch screen, and they were the
- * shortest targets in it — 40px for a department and 32px for a section against
- * the 44px both platforms ask for. The height is made up above the text rather
- * than below it: the rail is bottom-aligned and the marker under a chosen tab
- * sits on the rule, so padding added at the top grows the target upward and
- * leaves the underline exactly where it was.
- *
- * It has to come after the `padding` shorthands above, not with the rest of the
- * touch rules near the top of this file, or the shorthand resets it.
- *
- * Phones only. From the tablet breakpoint the department rail is the vertical
- * index down the side of the page, which sets its own padding and is already
- * tall enough.
- */
-@media (pointer: coarse) and (max-width: 767px) {
-  .tab-major {
-    padding-top: 4px;
+/* ---------------------------------------------------------------------------
+   The menu band, on a phone
+
+   A phone shows about a screenful and a half of the catalogue at a time, and
+   until now both rails of the menu were part of that screenful: pick a
+   department, scroll four rows down to look at what it opened, and the way to
+   pick a different one is off the top of the screen. Every change of mind cost
+   a scroll back up.
+
+   So on a phone the two levels are lifted out of the page and stuck to the top
+   of it as one band — departments across the top, the sections of whichever are
+   open directly beneath. Both stay put for the whole of a long scroll, which is
+   what makes browsing a hundred and thirty products with a thumb bearable.
+
+   It rides under the top bar, and because the bar rolls away when you scroll
+   down, the band follows it up and takes the top of the screen for itself. The
+   two move on the same curve so they read as one piece of furniture. Nothing
+   here exists above the tablet breakpoint: from there the departments are an
+   index down the side of the page, which is already sticky and already always
+   in view.
+--------------------------------------------------------------------------- */
+
+@media (max-width: 767px) {
+  :root {
+    /* Replaced by the bar's own measurement the moment it mounts. This is what
+       it comes to at the default text size, so the first paint is right too. */
+    --app-bar-h: 7.9375rem;
   }
 
-  .tab {
-    padding-top: 12px;
+  .catalogue-band {
+    position: sticky;
+    top: var(--app-bar-h);
+    z-index: 20;
+    /* Out to the edges of the glass. The band is a bar across the screen, not a
+       panel sitting inside the page's gutter — and the rails inside it carry
+       the gutter back as padding, so a swiped rail still runs edge to edge. */
+    margin-inline: -1rem;
+    padding-top: 0.375rem;
+    /* Opaque, because the products scroll underneath it. */
+    background: var(--color-surface);
+    transition: top 220ms cubic-bezier(0.2, 0, 0, 1);
+  }
+
+  /* The bar has rolled away, so the band moves up into the space it left. */
+  .app-bar[data-hidden] ~ main .catalogue-band {
+    top: 0;
+  }
+
+  /* The two rules swap weights inside the band. Elsewhere the department rail
+     is bounded by the stronger of the two hairlines, because it is the edge of
+     the menu; here the menu's edge is the bottom of the band, and the rule
+     between the two tiers is only a divider. The strong one has to be the one
+     the products slide under, or the band has nothing to sit on. */
+  .catalogue-band:has(.tablist-minor) .tablist-vertical {
+    border-bottom-color: var(--color-hairline-soft);
+  }
+
+  .catalogue-band .tablist-minor {
+    border-bottom-color: var(--color-hairline);
+  }
+
+  /* A rail left to itself wraps from 640px up, which shows every department at
+     once — worth it in the flow of the page, where the height is spent once and
+     scrolls away. In a band that never scrolls away, height is the thing being
+     spent, and eleven names wrapped across three rows would take a sixth of a
+     landscape phone and keep it. So below the tablet layout the rails stay the
+     single row you swipe at every width, and the band costs the same wherever
+     it is read. */
+  .catalogue-band .tablist {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+  }
+
+  /* -------------------------------------------------------------------------
+     Telling the two tiers apart without changing the size of the lettering.
+
+     Size used to do the work — 16px departments over 13.5px sections — and size
+     is the one thing that cannot do it here. A band is read at a glance and
+     tapped with a thumb: shrinking the lower row makes it both harder to read
+     and harder to hit, and all it says is "less important", not "these are the
+     parts of that".
+
+     So both rows take the same 15px and three other things carry the
+     difference. The sections stand on a sunken strip, and a change of paper is
+     what actually reads as nesting — it says "inside" where a change of size
+     only says "smaller". Their lettering is a weight lighter. And a chosen one
+     is a pill lying on that strip, where a chosen department is a tab cut into
+     the rule below it, pointing down at the products it opened.
+
+     Both rows are still built to be hit: 43px for a department and 41px for a
+     section, against the 44px both phone platforms ask for. That is what the
+     padding below is for, and why it is written as a shorthand here rather than
+     added on top of the rails' own.
+  ------------------------------------------------------------------------- */
+
+  .catalogue-band .tab-major,
+  .catalogue-band .tab {
+    font-size: 0.9375rem;
+    letter-spacing: -0.006em;
+  }
+
+  /* A tint needs room to stand off its own lettering, so the names carry side
+     padding and the rails close up the gap between them to pay for it. */
+  .catalogue-band .tablist {
+    column-gap: 0.625rem;
+  }
+
+  .catalogue-band .tab-major {
+    padding: 0.625rem 0.625rem 0.75rem;
+    font-weight: 600;
+    /* Rounded where it meets the band, square where it meets the rule — the
+       same cut the department index takes on a wide screen, turned through a
+       right angle. */
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  }
+
+  .catalogue-band .tablist-minor {
+    /* The strip. Faint enough to be a change of paper rather than a block of
+       colour, which is all it has to be to read as the level beneath. */
+    background: var(--color-sunken-soft);
+    align-items: center;
+    column-gap: 0.375rem;
+    padding-block: 0.25rem;
+  }
+
+  .catalogue-band .tab {
+    /* Lying on the strip rather than hung off the rule under it, so the pill
+       keeps its clearance top and bottom. */
+    margin-bottom: 0;
+    padding: 0.625rem 0.75rem;
+    font-weight: 500;
+    border-radius: 999px;
+  }
+
+  /* Chosen, on either row: ANAID's own green, laid on at about a seventh of its
+     strength and drifting across to the teal — the same wash the department
+     index carries on a wide screen, so "this one is on" looks the same wherever
+     the customer meets it. It is a wash and not a fill: the name on top of it
+     is the same near-black it was, so nothing is harder to read for being on.
+     The sections take a touch more of it, because they are washing over the
+     strip's own grey rather than over white. */
+  .catalogue-band .tab-major[aria-pressed='true'] {
+    background-image: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-accent-3) 17%, transparent) 0%,
+      color-mix(in srgb, var(--color-accent) 9%, transparent) 100%
+    );
+  }
+
+  .catalogue-band .tab[aria-pressed='true'] {
+    background-image: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-accent-3) 24%, transparent) 0%,
+      color-mix(in srgb, var(--color-accent) 14%, transparent) 100%
+    );
+  }
+
+  /* The marker under a chosen department goes green with the wash above it. An
+     ink bar on the end of a green tab only looks like a leftover — the same
+     reasoning the index follows on a wide screen. */
+  .catalogue-band .tab-major[aria-pressed='true']::after {
+    background: linear-gradient(90deg, var(--color-accent-3), var(--color-accent));
+  }
+
+  /* A pill is already its own mark. A rule underneath it as well would be two
+     answers to the same question. */
+  .catalogue-band .tab::after {
+    display: none;
+  }
+
+  /* The count belongs to the tinted name now, so it takes its colour from it. */
+  .catalogue-band [aria-pressed='true'] > .tab-n {
+    color: var(--color-accent);
+  }
+
+  /* The focus ring follows the shape it is drawn around, rather than the 4px
+     the rails use where there is no shape to follow. */
+  .catalogue-band .tab-major:focus-visible {
+    border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  }
+
+  .catalogue-band .tab:focus-visible {
+    border-radius: 999px;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+  .catalogue-band {
+    margin-inline: -1.5rem;
   }
 }
 

@@ -20,11 +20,44 @@ import { useEffect, useRef, useState } from 'react'
  * spare and a pointer that cannot flick, so the bar stays where it is; the
  * transform is fenced off inside a media query rather than being decided here,
  * so a window dragged across the breakpoint cannot leave it hidden.
+ *
+ * Two things are published for the rest of the page to position against: the
+ * bar's measured height, as `--app-bar-h` on the root element, and whether it
+ * is currently rolled up, as `data-hidden` on the bar itself. Anything that
+ * wants to stack underneath it — the shop's menu band does — then follows it up
+ * and down without needing to know anything about scrolling.
  */
 export function AppBar({ children }: { children: React.ReactNode }) {
   const [hidden, setHidden] = useState(false)
+  const bar = useRef<HTMLElement>(null)
   const frame = useRef(0)
   const last = useRef(0)
+
+  /**
+   * The bar's height, measured rather than written down.
+   *
+   * A sticky band below it has to know where the bar ends, and the answer moves
+   * — the search field is only there on a phone, the status banner is only
+   * there for an unapproved account, and a customer who has turned their text
+   * size up gets a taller bar than the one in the stylesheet. Measuring costs a
+   * single observer and cannot drift out of step with the markup.
+   */
+  useEffect(() => {
+    const element = bar.current
+    if (!element) return
+
+    const root = document.documentElement
+    const observer = new ResizeObserver(() => {
+      root.style.setProperty('--app-bar-h', `${element.offsetHeight}px`)
+    })
+
+    observer.observe(element)
+
+    return () => {
+      observer.disconnect()
+      root.style.removeProperty('--app-bar-h')
+    }
+  }, [])
 
   useEffect(() => {
     last.current = window.scrollY
@@ -83,6 +116,7 @@ export function AppBar({ children }: { children: React.ReactNode }) {
 
   return (
     <header
+      ref={bar}
       data-hidden={hidden || undefined}
       className="app-bar sticky top-0 z-30"
     >
