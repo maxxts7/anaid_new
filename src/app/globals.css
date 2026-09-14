@@ -916,9 +916,9 @@ button,
   }
 
   .catalogue-band .tablist-minor {
-    /* The strip. Faint enough to be a change of paper rather than a block of
-       colour, which is all it has to be to read as the level beneath. */
-    background: var(--color-sunken-soft);
+    /* The strip. A change of paper rather than a block of colour — enough to
+       read as the level beneath, and enough for a white pill to lift out of. */
+    background: var(--color-sunken);
     align-items: center;
     column-gap: 0.375rem;
     padding-block: 0.25rem;
@@ -933,13 +933,11 @@ button,
     border-radius: 999px;
   }
 
-  /* Chosen, on either row: ANAID's own green, laid on at about a seventh of its
+  /* A chosen department: ANAID's own green, laid on at about a seventh of its
      strength and drifting across to the teal — the same wash the department
      index carries on a wide screen, so "this one is on" looks the same wherever
-     the customer meets it. It is a wash and not a fill: the name on top of it
-     is the same near-black it was, so nothing is harder to read for being on.
-     The sections take a touch more of it, because they are washing over the
-     strip's own grey rather than over white. */
+     the customer meets it. A wash and not a fill: the name on top of it is the
+     same near-black it was, so nothing is harder to read for being on. */
   .catalogue-band .tab-major[aria-pressed='true'] {
     background-image: linear-gradient(
       90deg,
@@ -948,12 +946,19 @@ button,
     );
   }
 
+  /* A chosen section lifts out of the strip in white instead.
+   *
+   * The green is the department's mark. Spending it on both rows says the two
+   * are the same kind of thing at the moment the band is trying to say they are
+   * not — and a second green among the first is the one place a wash stops
+   * being findable at a glance. This is the switcher's trick instead, which is
+   * already how this interface says "chosen" without colour: a sunken trough
+   * with the chosen one lifted out of it on white. Quiet next to the green
+   * above, and unmistakable against the grey it sits on.
+   */
   .catalogue-band .tab[aria-pressed='true'] {
-    background-image: linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--color-accent-3) 24%, transparent) 0%,
-      color-mix(in srgb, var(--color-accent) 14%, transparent) 100%
-    );
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sm);
   }
 
   /* The marker under a chosen department goes green with the wash above it. An
@@ -969,9 +974,19 @@ button,
     display: none;
   }
 
-  /* The count belongs to the tinted name now, so it takes its colour from it. */
-  .catalogue-band [aria-pressed='true'] > .tab-n {
+  /* The count belongs to the tinted name now, so it takes its colour from it.
+     The departments only — a teal number on a white pill would be the green
+     reaching into the row it was just taken out of. */
+  .catalogue-band .tab-major[aria-pressed='true'] > .tab-n {
     color: var(--color-accent);
+  }
+
+  /* The count holds its width open where it can change under the label — see
+     `widest` in catalogue-filters.tsx for what reserves it and why. A span has
+     to be told it can take a width at all before `min-width` means anything. */
+  .catalogue-band .tab-n {
+    display: inline-block;
+    text-align: right;
   }
 
   /* The focus ring follows the shape it is drawn around, rather than the 4px

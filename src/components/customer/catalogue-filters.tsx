@@ -208,17 +208,41 @@ export function CatalogueFilters({
     return counts
   }, [cards, survivesSections])
 
+  /**
+   * The widest each department's count will ever read.
+   *
+   * These numbers move — narrowing a department by its own sections takes its
+   * count down with it — and a number that loses a digit takes the width of the
+   * name beside it with it, so the tint behind a chosen department visibly
+   * shrank as you picked sections inside it. A count only ever falls from its
+   * unfiltered total, so reserving the digits of that total holds every tab
+   * still. Reserved per department rather than globally: a department that
+   * never gets past single figures should not carry room for three.
+   */
+  const widest = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const entry of cards) counts.set(entry.top, (counts.get(entry.top) ?? 0) + 1)
+    return counts
+  }, [cards])
+
   const departments = useMemo(
     () => [
-      { key: '', label: 'Everything', count: cards.length, on: tops.length === 0 },
+      {
+        key: '',
+        label: 'Everything',
+        count: cards.length,
+        on: tops.length === 0,
+        digits: String(cards.length).length,
+      },
       ...groups.map((entry) => ({
         key: entry.slug,
         label: entry.name,
         count: liveCounts.get(entry.slug) ?? 0,
         on: tops.includes(entry.slug),
+        digits: String(widest.get(entry.slug) ?? 0).length,
       })),
     ],
-    [groups, cards.length, tops, liveCounts]
+    [groups, cards.length, tops, liveCounts, widest]
   )
 
   // The section rail carries the sections of every open department. A
@@ -378,7 +402,14 @@ export function CatalogueFilters({
   )
 }
 
-type Option = { key: string; label: string; count: number; on: boolean }
+type Option = {
+  key: string
+  label: string
+  count: number
+  on: boolean
+  /** Digits to hold open for the count, where it can change under the label. */
+  digits?: number
+}
 
 /**
  * One rail of toggles. A group rather than a tablist, and `aria-pressed` rather
@@ -439,7 +470,12 @@ function FilterRail({
           className={variant === 'major' ? 'tab-major' : 'tab'}
         >
           {option.label}
-          <span className="tab-n">{option.count}</span>
+          <span
+            className="tab-n"
+            style={option.digits ? { minWidth: `${option.digits}ch` } : undefined}
+          >
+            {option.count}
+          </span>
         </button>
       ))}
     </div>
