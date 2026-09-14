@@ -1,10 +1,17 @@
 import Link from 'next/link'
+import { QuantityStepper } from '@/components/customer/quantity-stepper'
+import { BulkPriceHint } from '@/components/customer/bulk-price-hint'
 import { Price, PriceWithheld } from '@/components/ui/price'
 import { availableStock, type ProductListItem } from '@/lib/catalogue'
 import type { PriceResult } from '@/lib/pricing'
 
 /**
  * One product in a list.
+ *
+ * The photograph is the only part inside a border; the name, code and price sit
+ * on the page beneath it, in the open. A grid of these reads as a list of goods
+ * rather than a wall of boxes, and the picture — which is the thing a customer
+ * actually scans for — is left to carry the tile on its own.
  *
  * The price block is always the same size and in the same place whether or not
  * a price is shown, so the page does not jump about when a customer is approved
@@ -14,21 +21,23 @@ export function ProductCard({
   product,
   price,
   withheldMessage,
+  canOrder,
 }: {
   product: ProductListItem
   price?: PriceResult
   withheldMessage?: string
+  canOrder?: boolean
 }) {
   const image = product.images[0]
   const available = availableStock(product)
 
   return (
-    <article className="group h-full">
-      <Link
-        href={`/products/${product.slug}`}
-        className="flex h-full flex-col overflow-hidden rounded-lg border border-hairline bg-surface shadow-xs transition-[box-shadow,border-color,transform] duration-200 ease-out hover:-translate-y-0.5 hover:border-hairline-strong hover:shadow-md focus-visible:-translate-y-0.5 focus-visible:shadow-md"
-      >
-        <div className="product-media relative aspect-[5/4] border-b border-hairline">
+    <article className="group flex h-full flex-col">
+      {/* The link stops before the price. A button inside an anchor is invalid
+          markup and, worse, presses through to the anchor — so the ordering
+          controls sit outside it. */}
+      <Link href={`/products/${product.slug}`} className="flex flex-1 flex-col focus:outline-none">
+        <div className="lift product-media relative aspect-[5/4] rounded-lg border border-hairline">
           {image ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
@@ -38,27 +47,26 @@ export function ProductCard({
               alt={image.alt ?? product.name}
               loading="lazy"
               decoding="async"
-              className="p-2"
+              className="p-3"
             />
           ) : (
             <ProductPlaceholder sku={product.sku} packSize={product.packSize} />
           )}
-
-          {product.featured && (
-            <span className="absolute top-2 left-2 rounded-sm bg-ink/90 px-1.5 py-0.5 text-micro font-medium text-ink-inverse backdrop-blur-sm">
-              Popular
-            </span>
-          )}
         </div>
 
-        <div className="flex flex-1 flex-col p-3.5">
-          <h3 className="text-small leading-snug font-medium text-ink transition-colors group-hover:text-accent">
+        <div className="flex flex-1 flex-col pt-3.5">
+          <h3 className="text-small leading-snug font-semibold text-ink transition-colors group-hover:text-accent">
             {product.name}
           </h3>
 
-          <p className="tnum mt-1 text-micro text-ink-muted">
+          {/* ANAID's photography is mostly marketing tiles with their own
+              lettering, so nothing is laid over a picture — a "Popular" flag in
+              the corner of the image covered the headline it was selling. It
+              sits in the line of small print instead, where it costs nothing. */}
+          <p className="tnum mt-1 text-micro text-ink-faint">
             {product.sku}
-            {product.packSize ? `, ${product.packSize}` : ''}
+            {product.packSize ? ` · ${product.packSize}` : ''}
+            {product.featured && <span className="font-medium text-accent"> · Popular</span>}
           </p>
 
           {/* Always present, empty or not, so the price sits at the same height
@@ -71,15 +79,35 @@ export function ProductCard({
                 : ''}
           </p>
 
-          <div className="pt-1.5">
-            {price ? (
-              <Price pence={price.unitPricePence} unit={product.sellUnit} />
-            ) : (
-              <PriceWithheld message={withheldMessage ?? 'Price after approval'} size="sm" />
-            )}
-          </div>
         </div>
       </Link>
+
+      <div className="flex items-center gap-1.5 pt-1.5">
+        {price ? (
+          <Price pence={price.unitPricePence} unit={product.sellUnit}>
+            <BulkPriceHint
+              bands={price.bands}
+              sellUnit={product.sellUnit}
+              appliedMinQuantity={price.appliedBand?.minQuantity}
+            />
+          </Price>
+        ) : (
+          <PriceWithheld message={withheldMessage ?? 'Price after approval'} size="sm" />
+        )}
+      </div>
+
+      {canOrder && (
+        <QuantityStepper
+          className="mt-2.5"
+          productId={product.id}
+          name={product.name}
+          slug={product.slug}
+          minOrderQuantity={product.minOrderQuantity}
+          unitPricePence={price?.unitPricePence ?? product.standardPricePence}
+          sellUnit={product.sellUnit}
+          soldOut={available === 0}
+        />
+      )}
     </article>
   )
 }
@@ -90,7 +118,7 @@ export function ProductCard({
  */
 function ProductPlaceholder({ sku, packSize }: { sku: string; packSize: string | null }) {
   return (
-    <div className="flex size-full flex-col items-center justify-center gap-1 bg-sunken bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,var(--color-hairline)_10px,var(--color-hairline)_11px)]">
+    <div className="flex size-full flex-col items-center justify-center gap-1 bg-sunken-soft bg-[repeating-linear-gradient(45deg,transparent,transparent_10px,var(--color-hairline)_10px,var(--color-hairline)_11px)]">
       <span className="tnum rounded-sm bg-surface px-2 py-1 text-micro font-semibold tracking-wide text-ink-muted">
         {sku}
       </span>

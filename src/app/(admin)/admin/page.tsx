@@ -51,7 +51,7 @@ export default async function AdminDashboard({
 
   return (
     <div className="p-4 lg:p-6">
-      <h1 className="text-display font-semibold">Good day, {staff.name.split(' ')[0]}</h1>
+      <h1 className="text-display font-bold">Good day, {staff.name.split(' ')[0]}</h1>
       <p className="mt-1 text-ink-muted">Here is what needs attention.</p>
 
       {denied && (
@@ -154,7 +154,7 @@ function Tile({
   return (
     <Link
       href={href}
-      className="rounded-lg border border-hairline bg-surface shadow-xs p-4 transition-colors hover:border-hairline-strong"
+      className="rounded-lg border border-hairline bg-surface p-4 transition-colors hover:border-hairline-strong"
     >
       <p className="text-small text-ink-muted">{label}</p>
       <p className={`tnum mt-1 text-hero leading-none font-bold ${urgent ? 'text-accent' : 'text-ink'}`}>
@@ -176,7 +176,7 @@ function Panel({
   children: React.ReactNode
 }) {
   return (
-    <section className="overflow-hidden rounded-lg border border-hairline bg-surface shadow-xs">
+    <section className="overflow-hidden rounded-lg border border-hairline bg-surface">
       <div className="flex items-center justify-between border-b border-hairline px-4 py-2.5">
         <h2 className="font-medium">{title}</h2>
         {action && (

@@ -14,7 +14,7 @@ export function BottomNav({ showBasket }: { showBasket: boolean }) {
   const pathname = usePathname()
 
   const items: { href: Route; label: string; icon: typeof LayoutGrid }[] = [
-    { href: '/products' as Route, label: 'Catalogue', icon: LayoutGrid },
+    { href: '/products' as Route, label: 'Shop', icon: LayoutGrid },
     ...(showBasket ? [{ href: '/basket' as Route, label: 'Basket', icon: ShoppingBasket }] : []),
     { href: '/orders' as Route, label: 'Orders', icon: ReceiptText },
     { href: '/account' as Route, label: 'Account', icon: UserRound },

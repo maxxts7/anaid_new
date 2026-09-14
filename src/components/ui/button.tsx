@@ -4,20 +4,34 @@ import { cn } from '@/lib/cn'
 type Variant = 'primary' | 'secondary' | 'quiet' | 'danger'
 type Size = 'sm' | 'md' | 'lg'
 
+/**
+ * Buttons.
+ *
+ * Pills, not rounded rectangles — the one fully round thing in a layout built
+ * from rules and right angles, which is what makes a button read as a button
+ * without needing a fill to announce itself. A secondary is exactly that: an
+ * outline on white. Only the primary is filled, and it is filled with a shallow
+ * gradient across the three accent steps rather than one flat block of colour,
+ * lit from underneath by a glow of the same blue. It is the only thing in the
+ * interface allowed to look lit, which is how it stays the obvious thing to
+ * press on a page with no other colour on it.
+ */
 const base =
-  'inline-flex items-center justify-center gap-2 rounded-md font-medium whitespace-nowrap transition-[background-color,border-color,color,box-shadow,transform] duration-150 ease-out active:scale-[0.985] disabled:pointer-events-none disabled:opacity-45'
+  'inline-flex items-center justify-center rounded-full font-medium whitespace-nowrap transition-[background-color,background-image,border-color,color,box-shadow,transform] duration-150 ease-out active:scale-[0.985] disabled:pointer-events-none disabled:opacity-45'
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-accent text-accent-ink shadow-xs hover:bg-accent-hover hover:shadow-sm',
-  secondary: 'border border-hairline-strong bg-surface text-ink shadow-xs hover:border-ink-faint hover:bg-sunken',
-  quiet: 'text-ink-muted hover:bg-sunken hover:text-ink',
+  primary: 'btn-accent border border-transparent font-semibold text-accent-ink',
+  secondary: 'border border-hairline bg-surface text-ink hover:border-ink-muted hover:bg-sunken-soft',
+  quiet: 'border border-transparent text-ink-muted hover:text-ink',
   danger: 'border border-refused/25 bg-refused-soft text-refused hover:bg-refused hover:text-white',
 }
 
+/** Heights and type taken from the reference's application pages, not its
+ *  landing page, which runs everything a size larger. */
 const sizes: Record<Size, string> = {
-  sm: 'h-8 px-3 text-small',
-  md: 'h-10 px-4 text-base',
-  lg: 'h-12 px-5 text-lead',
+  sm: 'h-9 gap-1.5 px-4 text-[0.84375rem]',
+  md: 'h-10 gap-[7px] px-[17px] text-[0.875rem]',
+  lg: 'h-[50px] gap-2 px-[21px] text-[1.09375rem]',
 }
 
 /**

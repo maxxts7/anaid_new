@@ -18,11 +18,14 @@ export function Price({
   unit,
   size = 'md',
   className,
+  children,
 }: {
   pence: number
   unit?: string | null
   size?: 'sm' | 'md' | 'lg'
   className?: string
+  /** Slotted in hard against the figure — a mark about the price itself. */
+  children?: React.ReactNode
 }) {
   const sizes = {
     sm: 'text-base',
@@ -33,6 +36,7 @@ export function Price({
   return (
     <span className={cn('tnum inline-flex items-baseline gap-1 font-semibold text-ink', sizes[size], className)}>
       {formatPence(pence)}
+      {children}
       {unit && <span className="text-micro font-normal text-ink-muted">per {unit}</span>}
     </span>
   )
@@ -81,14 +85,15 @@ export function PriceDetail({ price, unit }: { price: PriceResult; unit?: string
         )}
       </div>
 
-      <p className="mt-1 text-micro text-ink-muted">
+      <p className="mt-1.5 text-micro text-ink-muted">
         {saving > 0
           ? `${PRICE_SOURCE_LABELS[price.source]}, saving ${formatPence(saving)} a ${unit ?? 'unit'}`
           : PRICE_SOURCE_LABELS[price.source]}
       </p>
 
       {price.nextBand && price.nextBand.savingPerUnitPence > 0 && (
-        <p className="mt-2 rounded-sm border border-accent/20 bg-accent-soft px-2.5 py-1.5 text-micro text-accent">
+        <p className="mt-3 flex items-center gap-2 text-micro font-medium text-accent">
+          <span aria-hidden className="h-3 w-0.5 rounded-full bg-accent" />
           Order {price.nextBand.minQuantity} or more and pay {formatPence(price.nextBand.pricePence)} each
         </p>
       )}

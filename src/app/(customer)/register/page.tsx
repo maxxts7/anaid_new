@@ -12,7 +12,7 @@ export default async function RegisterPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 md:py-12">
-      <h1 className="text-display font-semibold">Open a trade account</h1>
+      <h1 className="text-display font-bold">Open a trade account</h1>
       <p className="mt-2 max-w-xl text-lead text-ink-muted">
         We supply businesses only. Tell us about yours and we will set up your account with the right
         pricing.
@@ -24,7 +24,7 @@ export default async function RegisterPage() {
           { step: 2, title: 'Confirm your number', body: 'We text you a short code.' },
           { step: 3, title: 'We approve you', body: 'Usually within one working day. Then prices appear.' },
         ].map((item) => (
-          <li key={item.step} className="rounded-lg border border-hairline bg-surface shadow-xs p-4">
+          <li key={item.step} className="rounded-lg border border-hairline bg-surface p-4">
             <span className="tnum flex size-6 items-center justify-center rounded-full bg-ink text-micro font-semibold text-ink-inverse">
               {item.step}
             </span>

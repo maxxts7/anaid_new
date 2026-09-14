@@ -20,7 +20,7 @@ export default async function VerifyPage({
 
   return (
     <div className="mx-auto max-w-md px-4 py-12">
-      <h1 className="text-display font-semibold">
+      <h1 className="text-display font-bold">
         {isRegistration ? 'Confirm your details' : 'Check your messages'}
       </h1>
       <p className="mt-2 text-ink-muted">
@@ -29,7 +29,7 @@ export default async function VerifyPage({
         is valid for {settings['otp.expiryMinutes']} minutes.
       </p>
 
-      <div className="mt-8 rounded-lg border border-hairline bg-surface shadow-xs p-5">
+      <div className="mt-8 rounded-lg border border-hairline bg-surface p-5">
         <VerifyForm
           to={to}
           purpose={isRegistration ? 'registration' : 'login'}

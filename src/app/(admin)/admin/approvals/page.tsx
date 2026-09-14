@@ -33,7 +33,7 @@ export default async function ApprovalsPage() {
 
   return (
     <div className="p-4 lg:p-6">
-      <h1 className="text-display font-semibold">Customer approvals</h1>
+      <h1 className="text-display font-bold">Customer approvals</h1>
       <p className="mt-1 text-ink-muted">
         {waiting.length === 0
           ? 'Nothing is waiting.'
@@ -49,7 +49,7 @@ export default async function ApprovalsPage() {
           </p>
         </div>
       ) : (
-        <div className="table-scroll mt-6 rounded-lg border border-hairline bg-surface shadow-xs">
+        <div className="table-scroll mt-6 rounded-lg border border-hairline bg-surface">
           <table className="w-full min-w-[820px] text-small">
             <thead className="border-b border-hairline bg-sunken text-left">
               <tr>

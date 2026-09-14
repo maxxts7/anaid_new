@@ -74,7 +74,7 @@ export default async function OrderPage({
 
       <div className="mt-4 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="tnum text-display font-semibold">{order.orderNumber}</h1>
+          <h1 className="tnum text-display font-bold">{order.orderNumber}</h1>
           <p className="tnum mt-1 text-small text-ink-muted">
             Placed{' '}
             {order.placedAt.toLocaleDateString('en-GB', {
@@ -111,7 +111,7 @@ export default async function OrderPage({
         </ol>
       )}
 
-      <div className="mt-6 overflow-hidden rounded-lg border border-hairline bg-surface shadow-xs">
+      <div className="mt-6 overflow-hidden rounded-lg border border-hairline bg-surface">
         <table className="w-full text-small">
           <thead className="border-b border-hairline bg-sunken text-left">
             <tr>
@@ -217,7 +217,7 @@ export default async function OrderPage({
       )}
 
       {order.status === 'CANCELLED' && order.cancellationReason && (
-        <p className="mt-6 rounded-lg border border-hairline bg-surface shadow-xs p-4 text-small text-ink-muted">
+        <p className="mt-6 rounded-lg border border-hairline bg-surface p-4 text-small text-ink-muted">
           Cancelled: {order.cancellationReason}
         </p>
       )}
@@ -235,7 +235,7 @@ function Panel({
   className?: string
 }) {
   return (
-    <section className={cn('rounded-lg border border-hairline bg-surface shadow-xs p-4', className)}>
+    <section className={cn('rounded-lg border border-hairline bg-surface p-4', className)}>
       <h2 className="mb-2 font-medium">{title}</h2>
       {children}
     </section>

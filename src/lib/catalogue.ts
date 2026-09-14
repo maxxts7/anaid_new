@@ -1,5 +1,6 @@
 import { prisma } from './db'
 import { catalogueViewer } from './auth/guards'
+import { tidyName } from './text'
 import type { AccountStatus } from '../generated/prisma/client'
 import {
   priceProducts,
@@ -41,22 +42,22 @@ export const PRODUCT_LIST_SELECT = {
 
 export type ProductListItem = Awaited<ReturnType<typeof listProducts>>[number]
 
+/**
+ * Products for a listing. There is deliberately no category filter: the
+ * catalogue is read whole and the tabs narrow it in the browser, which is what
+ * makes moving between departments instant. Only a search — a genuinely
+ * different question — comes back here.
+ */
 export async function listProducts(options: {
   search?: string
-  categorySlug?: string
   featuredOnly?: boolean
   take?: number
 } = {}) {
-  const { search, categorySlug, featuredOnly, take } = options
-
-  // ANAID's categories nest — "Food Container" has nine children. Choosing the
-  // parent must show everything beneath it, not the handful filed directly.
-  const categoryIds = categorySlug ? await categoryWithDescendants(categorySlug) : null
+  const { search, featuredOnly, take } = options
 
   return prisma.product.findMany({
     where: {
       active: true,
-      categoryId: categoryIds ? { in: categoryIds } : undefined,
       featured: featuredOnly ? true : undefined,
       ...(search
         ? {
@@ -107,24 +108,6 @@ export async function listCategories() {
       _count: { select: { products: { where: { active: true } } } },
     },
   })
-}
-
-/** A category and everything filed beneath it, as ids. */
-export async function categoryWithDescendants(slug: string): Promise<string[]> {
-  const category = await prisma.category.findUnique({ where: { slug }, select: { id: true } })
-  if (!category) return []
-
-  const all = await prisma.category.findMany({ select: { id: true, parentId: true } })
-  const ids = [category.id]
-
-  // Two levels is all ANAID uses, but walk until nothing new appears.
-  for (let depth = 0; depth < 5; depth++) {
-    const next = all.filter((row) => row.parentId && ids.includes(row.parentId) && !ids.includes(row.id))
-    if (next.length === 0) break
-    ids.push(...next.map((row) => row.id))
-  }
-
-  return ids
 }
 
 export type CategoryTile = {
@@ -181,17 +164,122 @@ export async function categoryTree(): Promise<CategoryTile[]> {
 
       return {
         id: category.id,
-        name: category.name,
+        name: tidyName(category.name),
         slug: category.slug,
         imageUrl: category.imageUrl ?? borrowed,
         count,
         children: children
           .filter((child) => child._count.products > 0)
-          .map((child) => ({ name: child.name, slug: child.slug, count: child._count.products })),
+          .map((child) => ({ name: tidyName(child.name), slug: child.slug, count: child._count.products })),
       }
     })
     .filter((category) => category.count > 0)
     .sort((a, b) => b.count - a.count)
+}
+
+/** One rail of the catalogue tabs: a top-level category and what sits under it. */
+export type CatalogueGroup = {
+  id: string
+  name: string
+  slug: string
+  /** Everything in this category and beneath it, within the set being shown. */
+  count: number
+  /** How many are filed directly against the parent rather than a child. */
+  looseCount: number
+  children: { id: string; name: string; slug: string; count: number }[]
+}
+
+/**
+ * Where one category sits in the two rails: which top-level tab owns it, and
+ * which second-level tab beneath that, if any. A product filed straight onto a
+ * parent has no child tab and belongs only to the parent's own panel.
+ */
+export type CategoryPath = { top: string; child: string | null }
+
+/**
+ * The two rails of category tabs, counted against a particular set of products.
+ *
+ * `categoryTree` counts the whole catalogue, which is the right number on the
+ * home page and the wrong one above a search result: a customer who searched
+ * "kraft" should see how many kraft lines are in Bags & Sheets, not how many
+ * bags ANAID sells. So the counts here are derived from the products actually
+ * being shown, and a category nobody in that set belongs to does not get a tab.
+ *
+ * `paths` comes back alongside so that the tabs and the products they filter
+ * are decided by the same walk up the tree — the alternative, counting in one
+ * place and filtering in another, is how a tab ends up promising eight products
+ * and showing six.
+ */
+export async function catalogueGroups(
+  products: { categoryId: string }[]
+): Promise<{ groups: CatalogueGroup[]; paths: Record<string, CategoryPath> }> {
+  const categories = await prisma.category.findMany({
+    where: { active: true },
+    orderBy: [{ sortOrder: 'asc' }, { name: 'asc' }],
+    select: { id: true, name: true, slug: true, parentId: true },
+  })
+
+  const byId = new Map(categories.map((category) => [category.id, category]))
+
+  // ANAID files a handful of products against a parent directly and the rest
+  // against its children, so walk up recording the last two steps: the child
+  // rail wants the second-level ancestor, the parent rail the root.
+  const paths: Record<string, CategoryPath> = {}
+
+  for (const category of categories) {
+    const lineage: string[] = []
+    let current: (typeof categories)[number] | undefined = category
+
+    for (let depth = 0; current && depth < 6; depth++) {
+      lineage.unshift(current.slug)
+      if (!current.parentId) break
+      current = byId.get(current.parentId)
+    }
+
+    if (lineage.length > 0) {
+      paths[category.id] = { top: lineage[0], child: lineage[1] ?? null }
+    }
+  }
+
+  const counts = new Map<string, number>()
+  const bump = (slug: string) => counts.set(slug, (counts.get(slug) ?? 0) + 1)
+
+  for (const product of products) {
+    const path = paths[product.categoryId]
+    if (!path) continue
+    bump(path.top)
+    if (path.child) bump(path.child)
+  }
+
+  return {
+    paths,
+    groups: categories
+      .filter((category) => !category.parentId)
+      .map((parent) => {
+        const children = categories
+          .filter((category) => category.parentId === parent.id)
+          .map((child) => ({
+            id: child.id,
+            name: tidyName(child.name),
+            slug: child.slug,
+            count: counts.get(child.slug) ?? 0,
+          }))
+          .filter((child) => child.count > 0)
+
+        const count = counts.get(parent.slug) ?? 0
+
+        return {
+          id: parent.id,
+          name: tidyName(parent.name),
+          slug: parent.slug,
+          count,
+          looseCount: count - children.reduce((total, child) => total + child.count, 0),
+          children,
+        }
+      })
+      .filter((group) => group.count > 0)
+      .sort((a, b) => b.count - a.count),
+  }
 }
 
 export type CataloguePricing = {

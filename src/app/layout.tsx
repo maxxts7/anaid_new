@@ -28,7 +28,11 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en-GB" className={archivo.variable}>
+    // `data-scroll-behavior` restores the pre-16 behaviour of overriding the
+    // stylesheet's smooth scrolling during a route change, so following a link
+    // lands at the top of the next page instantly instead of gliding there,
+    // while in-page anchors keep scrolling smoothly.
+    <html lang="en-GB" className={archivo.variable} data-scroll-behavior="smooth">
       <body>{children}</body>
     </html>
   )

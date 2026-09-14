@@ -19,12 +19,12 @@ export default async function OrdersPage() {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 text-center">
         <ReceiptText className="mx-auto size-7 text-ink-faint" />
-        <h1 className="mt-4 text-title font-semibold">No orders yet</h1>
+        <h1 className="mt-4 text-title font-bold">No orders yet</h1>
         <p className="mt-2 text-ink-muted">
           Your orders will appear here once your account is approved and you have placed one.
         </p>
         <ButtonLink href="/products" className="mt-6">
-          Browse the catalogue
+          Browse the shop
         </ButtonLink>
       </div>
     )
@@ -40,10 +40,10 @@ export default async function OrdersPage() {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 text-center">
         <ReceiptText className="mx-auto size-7 text-ink-faint" />
-        <h1 className="mt-4 text-title font-semibold">No orders yet</h1>
+        <h1 className="mt-4 text-title font-bold">No orders yet</h1>
         <p className="mt-2 text-ink-muted">When you place your first order it will appear here.</p>
         <ButtonLink href="/products" className="mt-6">
-          Browse the catalogue
+          Browse the shop
         </ButtonLink>
       </div>
     )
@@ -51,9 +51,9 @@ export default async function OrdersPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-6">
-      <h1 className="text-display font-semibold">Your orders</h1>
+      <h1 className="text-display font-bold">Your orders</h1>
 
-      <ul className="mt-6 overflow-hidden rounded-lg border border-hairline bg-surface shadow-xs">
+      <ul className="mt-6 overflow-hidden rounded-lg border border-hairline bg-surface">
         {orders.map((order) => (
           <li key={order.id} className="border-b border-hairline last:border-b-0">
             <Link

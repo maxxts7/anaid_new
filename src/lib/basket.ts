@@ -210,6 +210,54 @@ export async function buildOrderDraft(
   }
 }
 
+/** One line of the running basket, as the margin panel and the header show it. */
+export type BasketLineSummary = {
+  productId: string
+  name: string
+  slug: string
+  quantity: number
+  unitPricePence: number
+  lineNetPence: number
+  issues: string[]
+}
+
+export type BasketSummary = {
+  lines: BasketLineSummary[]
+  subtotalPence: number
+  remainingForFreeDeliveryPence: number
+  freeDeliveryThresholdPence: number
+}
+
+/**
+ * The basket as the shop needs it: enough to show a running total, and no more.
+ *
+ * This exists so that adding a line can hand the new basket straight back to
+ * the browser. The alternative — revalidating the page and letting the server
+ * re-render it — meant re-reading and re-pricing all hundred and thirty-six
+ * products to discover that one number had changed.
+ */
+export async function basketSummary(
+  customer: PricingCustomer,
+  userId: string
+): Promise<BasketSummary> {
+  const draft = await buildOrderDraft(customer, await basketItems(userId))
+
+  return {
+    lines: draft.lines.map((line) => ({
+      productId: line.productId,
+      name: line.name,
+      slug: line.slug,
+      quantity: line.quantity,
+      unitPricePence: line.unitPricePence,
+      lineNetPence: line.lineNetPence,
+      issues: line.issues,
+    })),
+    subtotalPence: draft.subtotalPence,
+    remainingForFreeDeliveryPence: draft.remainingForFreeDeliveryPence,
+    freeDeliveryThresholdPence: draft.freeDeliveryThresholdPence,
+  }
+}
+
 /**
  * What this customer currently owes: unpaid invoices plus orders not yet
  * invoiced (gap #8). Invoices arrive in a later phase; until then every live

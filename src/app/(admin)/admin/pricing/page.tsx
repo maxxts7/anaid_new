@@ -30,14 +30,14 @@ export default async function PricingPage() {
 
   return (
     <div className="p-4 lg:p-6">
-      <h1 className="text-display font-semibold">Pricing levels</h1>
+      <h1 className="text-display font-bold">Pricing levels</h1>
       <p className="mt-1 max-w-2xl text-ink-muted">
         A level is a percentage off the list price, so a new product is sellable at every level the moment
         it is created. A price agreed with one customer overrides their level, and the customer always
         receives whichever applicable price is lowest.
       </p>
 
-      <div className="table-scroll mt-6 rounded-lg border border-hairline bg-surface shadow-xs">
+      <div className="table-scroll mt-6 rounded-lg border border-hairline bg-surface">
         <table className="w-full min-w-[720px] text-small">
           <thead className="border-b border-hairline bg-sunken text-left">
             <tr>
@@ -64,9 +64,9 @@ export default async function PricingPage() {
         </table>
       </div>
 
-      <h2 className="mt-8 text-title font-semibold">What that means in pounds</h2>
+      <h2 className="mt-8 text-title font-bold">What that means in pounds</h2>
 
-      <div className="table-scroll mt-3 rounded-lg border border-hairline bg-surface shadow-xs">
+      <div className="table-scroll mt-3 rounded-lg border border-hairline bg-surface">
         <table className="w-full min-w-[720px] text-small">
           <thead className="border-b border-hairline bg-sunken text-left">
             <tr>

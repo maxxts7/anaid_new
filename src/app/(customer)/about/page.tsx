@@ -11,19 +11,19 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4">
+    <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
       <section className="border-b border-hairline py-12 md:py-16">
-        <p className="text-micro font-semibold tracking-[0.12em] uppercase text-ink-muted">
+        <p className="eyebrow">
           Always from nature
         </p>
-        <h1 className="mt-3 max-w-2xl text-hero font-bold" style={{ fontStretch: '88%' }}>
+        <h1 className="mt-2.5 max-w-2xl text-hero font-bold">
           Trusted. Reliable. Sustainable.
         </h1>
-        <p className="mt-5 max-w-2xl text-lead text-ink-muted">{WHO_WE_ARE}</p>
+        <p className="mt-5 max-w-2xl text-read text-ink-soft">{WHO_WE_ARE}</p>
       </section>
 
       <section className="grid items-center gap-8 border-b border-hairline py-10 md:grid-cols-2 md:py-14">
-        <div className="product-media aspect-[16/10] overflow-hidden rounded-lg border border-hairline shadow-sm">
+        <div className="product-media aspect-[16/10] overflow-hidden rounded-lg border border-hairline">
           <img
             src="/brand/who-we-are.webp"
             alt="A barista handing a customer a takeaway coffee in an ANAID cup."
@@ -33,10 +33,10 @@ export default function AboutPage() {
         </div>
 
         <div>
-          <p className="text-micro font-semibold tracking-[0.12em] uppercase text-ink-muted">
+          <p className="eyebrow">
             Who are we?
           </p>
-          <h2 className="mt-3 text-display font-semibold">Behind the brand</h2>
+          <h2 className="mt-2.5 text-display font-bold">Behind the brand</h2>
           <p className="mt-4 text-ink-muted">{ONE_STOP}</p>
           <p className="mt-4 text-ink-muted">
             Our range is sourced from trusted manufacturers and supported by in-house production,
@@ -47,8 +47,8 @@ export default function AboutPage() {
       </section>
 
       <section className="border-b border-hairline py-10 md:py-14">
-        <p className="text-micro font-semibold tracking-[0.12em] uppercase text-ink-muted">Nature</p>
-        <h2 className="mt-3 text-display font-semibold">The pure promise</h2>
+        <p className="eyebrow">Nature</p>
+        <h2 className="mt-2.5 text-display font-bold">The pure promise</h2>
 
         <ul className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
           {PILLARS.map((pillar) => (
@@ -63,7 +63,7 @@ export default function AboutPage() {
 
       <section className="grid items-center gap-8 border-b border-hairline py-10 md:grid-cols-2 md:py-14">
         <div>
-          <h2 className="text-display font-semibold">Your all-in-one catering supplier</h2>
+          <h2 className="text-display font-bold">Your all-in-one catering supplier</h2>
           <p className="mt-4 text-ink-muted">
             Bulk catering and hygiene essentials, built for UK food businesses — one supplier for
             everything you need, trusted by caterers and chosen for quality.
@@ -79,7 +79,7 @@ export default function AboutPage() {
           </ul>
         </div>
 
-        <div className="product-media aspect-[4/3] overflow-hidden rounded-lg border border-hairline shadow-sm">
+        <div className="product-media aspect-[4/3] overflow-hidden rounded-lg border border-hairline">
           <img
             src="/brand/packaging-detail.webp"
             alt="A bagasse clamshell container, kraft coffee cup and wooden fork."
@@ -90,7 +90,7 @@ export default function AboutPage() {
       </section>
 
       <section className="py-10 md:py-14">
-        <h2 className="text-title font-semibold">Open an account</h2>
+        <h2 className="text-title font-bold">Open an account</h2>
         <p className="mt-2 max-w-xl text-ink-muted">
           We supply the trade only. Register your business and we will approve your account and set
           your pricing — usually within one working day.
@@ -101,7 +101,7 @@ export default function AboutPage() {
             Open a trade account
           </ButtonLink>
           <ButtonLink href="/products" size="lg" variant="secondary">
-            Browse catalogue
+            Browse the shop
           </ButtonLink>
           <a
             href={BROCHURE}

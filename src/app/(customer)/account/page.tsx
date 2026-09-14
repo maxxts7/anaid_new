@@ -31,7 +31,7 @@ export default async function AccountPage() {
     <div className="mx-auto max-w-3xl px-4 py-8">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-display font-semibold">{customer.businessName}</h1>
+          <h1 className="text-display font-bold">{customer.businessName}</h1>
           {customer.customerNumber && (
             <p className="tnum mt-1 text-small text-ink-muted">Account {customer.customerNumber}</p>
           )}
@@ -116,7 +116,7 @@ export default async function AccountPage() {
 
 function Tile({ label, value, tabular }: { label: string; value: string; tabular?: boolean }) {
   return (
-    <div className="rounded-lg border border-hairline bg-surface shadow-xs p-3">
+    <div className="rounded-lg border border-hairline bg-surface p-3">
       <p className="text-micro text-ink-muted">{label}</p>
       <p className={`mt-1 font-semibold ${tabular ? 'tnum' : ''}`}>{value}</p>
     </div>
@@ -136,7 +136,7 @@ function Section({
     <section className="mt-8">
       <h2 className="text-lead font-semibold">{title}</h2>
       {description && <p className="mt-1 text-small text-ink-muted">{description}</p>}
-      <dl className="mt-3 overflow-hidden rounded-lg border border-hairline bg-surface shadow-xs text-small">
+      <dl className="mt-3 overflow-hidden rounded-lg border border-hairline bg-surface text-small">
         {children}
       </dl>
     </section>

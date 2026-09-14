@@ -55,7 +55,7 @@ export default async function AdminOrderPage({
 
       <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="tnum text-display font-semibold">{order.orderNumber}</h1>
+          <h1 className="tnum text-display font-bold">{order.orderNumber}</h1>
           <p className="mt-1 text-small text-ink-muted">
             <Link href={`/admin/customers/${order.customer.id}`} className="font-medium hover:text-accent">
               {order.customer.businessName}
@@ -69,7 +69,7 @@ export default async function AdminOrderPage({
 
       <div className="mt-6 grid gap-4 xl:grid-cols-[1fr_340px]">
         <div className="space-y-4">
-          <section className="overflow-hidden rounded-lg border border-hairline bg-surface shadow-xs">
+          <section className="overflow-hidden rounded-lg border border-hairline bg-surface">
             <div className="table-scroll">
               <table className="w-full min-w-[620px] text-small">
                 <thead className="border-b border-hairline bg-sunken text-left">
@@ -241,7 +241,7 @@ function Panel({
   padded?: boolean
 }) {
   return (
-    <section className="overflow-hidden rounded-lg border border-hairline bg-surface shadow-xs">
+    <section className="overflow-hidden rounded-lg border border-hairline bg-surface">
       <h2 className="border-b border-hairline px-4 py-2.5 font-medium">{title}</h2>
       <div className={padded ? 'p-4' : 'p-4'}>{children}</div>
     </section>

@@ -25,13 +25,13 @@ export default async function NewCustomerPage() {
         Customers
       </Link>
 
-      <h1 className="mt-3 text-display font-semibold">Add a customer</h1>
+      <h1 className="mt-3 text-display font-bold">Add a customer</h1>
       <p className="mt-1 max-w-xl text-ink-muted">
         For businesses you already trade with. The account is created approved, with its prices set, so
         they can sign in and order straight away.
       </p>
 
-      <div className="mt-6 max-w-2xl rounded-lg border border-hairline bg-surface shadow-xs p-5">
+      <div className="mt-6 max-w-2xl rounded-lg border border-hairline bg-surface p-5">
         <NewCustomerForm levels={levels} />
       </div>
     </div>

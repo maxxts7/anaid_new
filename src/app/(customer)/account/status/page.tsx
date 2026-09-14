@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: 'Your account status' }
  *
  * Every unapproved customer ends up here. It has one job: say plainly where the
  * account stands, what they can do meanwhile, and what happens next. No dead
- * ends — every state offers the catalogue, because browsing is always allowed.
+ * ends — every state offers the shop, because browsing is always allowed.
  */
 export default async function AccountStatusPage() {
   const session = await requireCustomer()
@@ -36,20 +36,20 @@ export default async function AccountStatusPage() {
       tone: 'text-pending',
       heading: 'Your account is awaiting approval',
       body: `Your contact details are confirmed and your application is with ANAID. We review applications by hand, usually within one working day.`,
-      next: 'When we approve you, your prices appear across the catalogue and you can start ordering.',
+      next: 'When we approve you, your prices appear across the shop and you can start ordering.',
     },
     APPROVED: {
       icon: ShieldCheck,
       tone: 'text-approved',
       heading: 'Your account is approved',
-      body: `You are trading on account ${session.customer.customerNumber ?? ''}. Your prices are shown throughout the catalogue.`,
-      next: 'Browse the catalogue and place an order.',
+      body: `You are trading on account ${session.customer.customerNumber ?? ''}. Your prices are shown throughout the shop.`,
+      next: 'Browse the shop and place an order.',
     },
     REJECTED: {
       icon: ShieldX,
       tone: 'text-refused',
       heading: 'Your application was not approved',
-      body: 'We are not able to open a trade account for you at the moment. You are welcome to browse the catalogue.',
+      body: 'We are not able to open a trade account for you at the moment. You are welcome to browse the shop.',
       next: `If you think this is a mistake, contact us on ${settings['company.phone']}.`,
     },
     SUSPENDED: {
@@ -66,15 +66,15 @@ export default async function AccountStatusPage() {
   return (
     <div className="mx-auto max-w-xl px-4 py-12">
       <Icon className={`size-7 ${tone}`} />
-      <h1 className="mt-4 text-display font-semibold">{heading}</h1>
+      <h1 className="mt-4 text-display font-bold">{heading}</h1>
       <p className="mt-3 text-lead text-ink-muted">{body}</p>
 
-      <div className="mt-6 rounded-lg border border-hairline bg-surface shadow-xs p-4">
+      <div className="mt-6 rounded-lg border border-hairline bg-surface p-4">
         <p className="text-small font-medium">What happens next</p>
         <p className="mt-1 text-small text-ink-muted">{next}</p>
       </div>
 
-      <dl className="mt-6 overflow-hidden rounded-lg border border-hairline bg-surface shadow-xs text-small">
+      <dl className="mt-6 overflow-hidden rounded-lg border border-hairline bg-surface text-small">
         <Row label="Business" value={session.customer.businessName} />
         <Row label="Contact" value={session.customer.contactName} />
         <Row label="Mobile" value={session.customer.mobile} tabular />
@@ -85,7 +85,7 @@ export default async function AccountStatusPage() {
       </dl>
 
       <div className="mt-6 flex flex-wrap gap-2">
-        <ButtonLink href="/products">Browse the catalogue</ButtonLink>
+        <ButtonLink href="/products">Browse the shop</ButtonLink>
         {status === 'REGISTERED' && (
           <ButtonLink href={`/verify?to=${encodeURIComponent(session.customer.mobile)}&purpose=registration`} variant="secondary">
             Enter your code

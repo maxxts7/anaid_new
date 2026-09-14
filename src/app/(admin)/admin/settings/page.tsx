@@ -13,7 +13,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="p-4 lg:p-6">
-      <h1 className="text-display font-semibold">Settings</h1>
+      <h1 className="text-display font-bold">Settings</h1>
       <p className="mt-1 max-w-xl text-ink-muted">
         These values drive the whole system. Changing the free-delivery threshold here changes what every
         customer sees at checkout, immediately.
@@ -53,7 +53,7 @@ export default async function SettingsPage() {
           })
 
           return (
-            <section key={group.id} className="overflow-hidden rounded-lg border border-hairline bg-surface shadow-xs">
+            <section key={group.id} className="overflow-hidden rounded-lg border border-hairline bg-surface">
               <div className="border-b border-hairline px-5 py-3">
                 <h2 className="font-medium">{group.label}</h2>
                 <p className="mt-0.5 text-small text-ink-muted">{group.description}</p>

@@ -134,7 +134,7 @@ export function RegisterForm() {
       </Section>
 
       <Section title="Before you send">
-        <div className="rounded-lg border border-hairline bg-surface shadow-xs p-4">
+        <div className="rounded-lg border border-hairline bg-surface p-4">
           <Checkbox
             name="acceptTerms"
             label="I accept the terms and conditions"

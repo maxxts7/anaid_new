@@ -34,10 +34,10 @@ export default async function CheckoutPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
-      <h1 className="text-display font-semibold">Checkout</h1>
+      <h1 className="text-display font-bold">Checkout</h1>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
-        <div className="rounded-lg border border-hairline bg-surface shadow-xs p-5">
+        <div className="rounded-lg border border-hairline bg-surface p-5">
           <CheckoutForm
             addresses={addresses.map((address) => ({
               id: address.id,
@@ -55,7 +55,7 @@ export default async function CheckoutPage() {
         </div>
 
         <aside className="h-fit space-y-4 lg:sticky lg:top-20">
-          <div className="rounded-lg border border-hairline bg-surface shadow-xs p-4">
+          <div className="rounded-lg border border-hairline bg-surface p-4">
             <h2 className="font-semibold">Your order</h2>
 
             <ul className="mt-3 space-y-2 text-small">

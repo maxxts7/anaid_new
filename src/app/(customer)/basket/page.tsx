@@ -31,12 +31,12 @@ export default async function BasketPage() {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 text-center">
         <ShoppingBasket className="mx-auto size-7 text-ink-faint" />
-        <h1 className="mt-4 text-title font-semibold">Your basket is empty</h1>
+        <h1 className="mt-4 text-title font-bold">Your basket is empty</h1>
         <p className="mt-2 text-ink-muted">
           Everything you add appears here with your own prices and running totals.
         </p>
         <ButtonLink href="/products" className="mt-6">
-          Browse the catalogue
+          Browse the shop
         </ButtonLink>
       </div>
     )
@@ -44,10 +44,10 @@ export default async function BasketPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-6">
-      <h1 className="text-display font-semibold">Your basket</h1>
+      <h1 className="text-display font-bold">Your basket</h1>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px]">
-        <div className="overflow-hidden rounded-lg border border-hairline bg-surface shadow-xs">
+        <div className="overflow-hidden rounded-lg border border-hairline bg-surface">
           {draft.lines.map((line) => (
             <div key={line.productId} className="border-b border-hairline p-4 last:border-b-0">
               <div className="flex flex-wrap items-start justify-between gap-3">
@@ -96,7 +96,7 @@ export default async function BasketPage() {
           ))}
         </div>
 
-        <aside className="h-fit rounded-lg border border-hairline bg-surface shadow-xs p-4 lg:sticky lg:top-20">
+        <aside className="h-fit rounded-lg border border-hairline bg-surface p-4 lg:sticky lg:top-20">
           <h2 className="font-semibold">Order summary</h2>
 
           <dl className="mt-3 space-y-2 text-small">

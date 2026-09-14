@@ -46,7 +46,7 @@ export default async function AdminOrdersPage({
 
   return (
     <div className="p-4 lg:p-6">
-      <h1 className="text-display font-semibold">Orders</h1>
+      <h1 className="text-display font-bold">Orders</h1>
       <p className="tnum mt-1 text-small text-ink-muted">
         {orders.length} {orders.length === 1 ? 'order' : 'orders'}
         {filtered ? ` at ${ORDER_STATUS_LABELS[status as OrderStatus].toLowerCase()}` : ''}
@@ -86,7 +86,7 @@ export default async function AdminOrdersPage({
           <p className="mt-1 text-small text-ink-muted">Orders appear the moment a customer places one.</p>
         </div>
       ) : (
-        <div className="table-scroll mt-4 rounded-lg border border-hairline bg-surface shadow-xs">
+        <div className="table-scroll mt-4 rounded-lg border border-hairline bg-surface">
           <table className="w-full min-w-[820px] text-small">
             <thead className="border-b border-hairline bg-sunken text-left">
               <tr>

@@ -15,17 +15,18 @@ export default async function ContactPage() {
   const tel = settings['company.phone'].replace(/\s/g, '')
 
   return (
-    <div className="mx-auto max-w-6xl px-4">
-      <section className="border-b border-hairline py-12 md:py-16">
-        <h1 className="text-hero font-bold" style={{ fontStretch: '88%' }}>
+    <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+      <section className="border-b border-hairline py-14 md:py-20">
+        <p className="eyebrow">Sales desk</p>
+        <h1 className="mt-2.5 text-hero font-bold">
           Drop us a line
         </h1>
-        <p className="mt-4 max-w-xl text-lead text-ink-muted">
+        <p className="mt-5 max-w-xl text-lede text-ink-soft">
           Get in touch with the sales team about trade accounts, bulk pricing, stock availability or
           own-brand printing.
         </p>
 
-        <div className="mt-7 flex flex-wrap gap-2">
+        <div className="mt-8 flex flex-wrap gap-2.5">
           <a href={`mailto:${settings['company.email']}`} className={buttonClass('primary', 'lg')}>
             Email the sales team
           </a>
@@ -35,8 +36,9 @@ export default async function ContactPage() {
         </div>
       </section>
 
-      <section className="py-10 md:py-14">
-        <h2 className="text-title font-semibold">Our store</h2>
+      <section className="py-14 md:py-16">
+        <p className="eyebrow">Where we are</p>
+        <h2 className="mt-2.5 text-title font-bold">Our store</h2>
 
         <dl className="mt-5 grid gap-px overflow-hidden rounded-lg border border-hairline bg-hairline sm:grid-cols-2 lg:grid-cols-4">
           <div className="bg-surface p-5">
@@ -90,8 +92,8 @@ export default async function ContactPage() {
           </div>
         </dl>
 
-        <div className="mt-10 rounded-lg border border-hairline bg-surface p-6 shadow-xs">
-          <h2 className="text-title font-semibold">Opening a trade account</h2>
+        <div className="mt-10 rounded-lg border border-hairline bg-surface p-6">
+          <h2 className="text-title font-bold">Opening a trade account</h2>
           <p className="mt-2 max-w-xl text-ink-muted">
             You do not need to call to get started. Register your business online and we will review
             it and set your pricing — usually within one working day.

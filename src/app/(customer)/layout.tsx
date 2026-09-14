@@ -6,47 +6,52 @@ import { getCustomerSession } from '@/lib/auth/session'
 import { getSettings } from '@/lib/settings'
 import { canSeePrices } from '@/lib/permissions'
 import { BROCHURE, ONE_STOP, OPENING_HOURS } from '@/lib/brand'
+import { BasketProvider } from '@/components/customer/basket-store'
+import { basketSummary } from '@/lib/basket'
+import { Wordmark } from '@/components/ui/wordmark'
 
 export default async function CustomerLayout({ children }: { children: React.ReactNode }) {
   const [session, settings] = await Promise.all([getCustomerSession(), getSettings()])
   const approved = session ? canSeePrices(session.customer.status) : false
 
+  // Seeded once here and kept in the browser from then on, so a line added in
+  // the shop shows in the header and the margin panel without a round trip.
+  const basket = approved ? await basketSummary(session!.customer, session!.user.id) : null
+
   return (
+    <BasketProvider initial={basket}>
     <div className="flex min-h-dvh flex-col">
       <SiteHeader />
       <StatusBanner />
 
-      <main className="flex-1 pb-20 md:pb-12">{children}</main>
+      <main className="flex-1">{children}</main>
 
-      <footer className="border-t border-hairline bg-inverse px-4 py-10 pb-24 text-ink-inverse md:pb-10">
-        <div className="mx-auto grid max-w-6xl gap-8 text-small sm:grid-cols-2 lg:grid-cols-4">
+      {/* One continuous sheet of paper from the header down. The footer is
+          marked off by a rule and by the drop in type size rather than by a
+          block of colour, which is the whole trick of this layout: contrast
+          comes from space and weight, not from filling areas in. */}
+      <footer className="border-t border-hairline px-4 pt-12 pb-28 md:pb-12">
+        <div className="mx-auto grid max-w-6xl gap-10 text-small sm:grid-cols-2 lg:grid-cols-4">
           <div className="max-w-sm">
-            <img
-              src="/brand/logo-lockup-inverse.png"
-              alt={settings['company.name']}
-              width={168}
-              height={143}
-              className="h-14 w-auto"
-              loading="lazy"
-            />
-            <p className="mt-4 text-ink-inverse/65">{ONE_STOP}</p>
+            <Wordmark />
+            <p className="mt-4 text-ink-muted">{ONE_STOP}</p>
           </div>
 
           <div>
-            <h2 className="text-micro font-semibold tracking-[0.08em] uppercase text-ink-inverse/50">Shop</h2>
-            <ul className="mt-3 flex flex-col gap-2 text-ink-inverse/80">
+            <h2 className="eyebrow">Shop</h2>
+            <ul className="mt-4 flex flex-col gap-2.5 text-ink-muted">
               <li>
-                <Link href="/products" className="hover:text-white">
-                  Catalogue
+                <Link href="/products" className="hover:text-ink">
+                  All products
                 </Link>
               </li>
               <li>
-                <Link href="/register" className="hover:text-white">
+                <Link href="/register" className="hover:text-ink">
                   Open a trade account
                 </Link>
               </li>
               <li>
-                <a href={BROCHURE} className="hover:text-white" download>
+                <a href={BROCHURE} className="hover:text-ink" download>
                   Download brochure (PDF)
                 </a>
               </li>
@@ -54,15 +59,15 @@ export default async function CustomerLayout({ children }: { children: React.Rea
           </div>
 
           <div>
-            <h2 className="text-micro font-semibold tracking-[0.08em] uppercase text-ink-inverse/50">Company</h2>
-            <ul className="mt-3 flex flex-col gap-2 text-ink-inverse/80">
+            <h2 className="eyebrow">Company</h2>
+            <ul className="mt-4 flex flex-col gap-2.5 text-ink-muted">
               <li>
-                <Link href="/about" className="hover:text-white">
+                <Link href="/about" className="hover:text-ink">
                   About us
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="hover:text-white">
+                <Link href="/contact" className="hover:text-ink">
                   Contact us
                 </Link>
               </li>
@@ -70,21 +75,21 @@ export default async function CustomerLayout({ children }: { children: React.Rea
           </div>
 
           <div>
-            <h2 className="text-micro font-semibold tracking-[0.08em] uppercase text-ink-inverse/50">Get in touch</h2>
-            <address className="mt-3 flex flex-col gap-2 not-italic text-ink-inverse/80">
+            <h2 className="eyebrow">Get in touch</h2>
+            <address className="mt-4 flex flex-col gap-2.5 not-italic text-ink-muted">
               <span>{settings['company.address']}</span>
-              <a href={`mailto:${settings['company.email']}`} className="hover:text-white">
+              <a href={`mailto:${settings['company.email']}`} className="hover:text-ink">
                 {settings['company.email']}
               </a>
-              <a href={`tel:${settings['company.phone'].replace(/\s/g, '')}`} className="tnum hover:text-white">
+              <a href={`tel:${settings['company.phone'].replace(/\s/g, '')}`} className="tnum hover:text-ink">
                 {settings['company.phone']}
               </a>
-              <span className="tnum text-ink-inverse/55">{OPENING_HOURS}</span>
+              <span className="tnum text-ink-faint">{OPENING_HOURS}</span>
             </address>
           </div>
         </div>
 
-        <div className="mx-auto mt-10 flex max-w-6xl flex-col gap-2 border-t border-white/10 pt-5 text-micro text-ink-inverse/45 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto mt-12 flex max-w-6xl flex-col gap-2 border-t border-hairline-soft pt-6 text-micro text-ink-faint sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {new Date().getFullYear()} {settings['company.name']}. Trade supplier — we do not sell to the public.
           </p>
@@ -103,5 +108,6 @@ export default async function CustomerLayout({ children }: { children: React.Rea
 
       <BottomNav showBasket={approved} />
     </div>
+    </BasketProvider>
   )
 }

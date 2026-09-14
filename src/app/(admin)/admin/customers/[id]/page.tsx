@@ -60,7 +60,7 @@ export default async function AdminCustomerPage({ params }: { params: Promise<{ 
 
       <div className="mt-3 flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-display font-semibold">{customer.businessName}</h1>
+          <h1 className="text-display font-bold">{customer.businessName}</h1>
           <p className="tnum mt-1 text-small text-ink-muted">
             {customer.customerNumber ?? 'No account number yet'} — applied{' '}
             {customer.createdAt.toLocaleDateString('en-GB')}
@@ -264,7 +264,7 @@ function Panel({
   padded?: boolean
 }) {
   return (
-    <section className="overflow-hidden rounded-lg border border-hairline bg-surface shadow-xs">
+    <section className="overflow-hidden rounded-lg border border-hairline bg-surface">
       <h2 className="border-b border-hairline px-4 py-2.5 font-medium">{title}</h2>
       <div className={padded ? 'p-4' : ''}>{children}</div>
     </section>

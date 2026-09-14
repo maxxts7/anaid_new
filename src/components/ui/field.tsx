@@ -1,7 +1,11 @@
 import { cn } from '@/lib/cn'
 
+/**
+ * One control. Ten-pixel corners, not the button's pill and not the card's
+ * sixteen — a field is its own kind of object and says so with its own radius.
+ */
 const control =
-  'w-full rounded-md border border-hairline-strong bg-surface px-3 text-base text-ink shadow-xs placeholder:text-ink-faint hover:border-ink-faint focus:border-accent focus:ring-4 focus:ring-accent/12 focus:outline-none disabled:bg-sunken disabled:text-ink-muted'
+  'w-full rounded-[10px] border border-hairline bg-surface px-3.5 text-base text-ink placeholder:text-ink-faint hover:border-hairline-strong focus:border-accent focus:ring-4 focus:ring-accent/10 focus:outline-none disabled:bg-sunken-soft disabled:text-ink-muted'
 
 export function Field({
   label,
@@ -20,9 +24,9 @@ export function Field({
 }) {
   return (
     <label className={cn('block', className)}>
-      <span className="mb-1.5 flex items-baseline gap-2">
-        <span className="text-small font-medium text-ink">{label}</span>
-        {!required && <span className="text-micro text-ink-faint">Optional</span>}
+      <span className="mb-[7px] flex items-baseline gap-2">
+        <span className="text-[0.84375rem] font-medium text-ink">{label}</span>
+        {!required && <span className="text-[0.84375rem] font-normal text-ink-faint">Optional</span>}
       </span>
       {children}
       {hint && !error && <span className="mt-1.5 block text-micro text-ink-muted">{hint}</span>}
@@ -56,7 +60,7 @@ export function Checkbox({
   return (
     <label
       className={cn(
-        'flex cursor-pointer gap-3 rounded-sm py-1.5 transition-colors hover:bg-sunken/60',
+        'flex cursor-pointer gap-3 rounded-sm py-1.5 transition-colors hover:bg-sunken-soft',
         className
       )}
     >

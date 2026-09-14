@@ -3,7 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { prisma } from '@/lib/db'
 import { requireOrderingCustomer } from '@/lib/auth/guards'
-import { getOrCreateBasket } from '@/lib/basket'
+import { basketSummary, getOrCreateBasket } from '@/lib/basket'
 
 /**
  * Basket actions.
@@ -35,10 +35,60 @@ export async function addToBasket(productId: string, quantity: number) {
     create: { basketId: basket.id, productId: product.id, quantity: wanted },
   })
 
+  // The basket screen is stale now, but the page the customer is standing on is
+  // not: it hands the new basket back below and the browser applies it. A blunt
+  // revalidate of the whole layout would re-price every product in the shop to
+  // deliver one changed total, which is seconds of work for nothing.
   revalidatePath('/basket')
-  revalidatePath('/', 'layout')
 
-  return { ok: true as const, message: 'Added to basket' }
+  return {
+    ok: true as const,
+    message: 'Added to basket',
+    summary: await basketSummary(session.customer, session.user.id),
+  }
+}
+
+/**
+ * Set a product's quantity outright, addressed by product rather than by line.
+ *
+ * The shop's steppers know what they are looking at but not what line it became
+ * in the basket, and looking one up to change it would be a round trip before
+ * the round trip. Zero removes the line; anything below the product's minimum
+ * is lifted to it, so the rule cannot be stepped under.
+ */
+export async function setBasketQuantity(productId: string, quantity: number) {
+  const session = await requireOrderingCustomer()
+
+  const product = await prisma.product.findFirst({
+    where: { id: productId, active: true },
+    select: { id: true, minOrderQuantity: true },
+  })
+
+  if (!product) {
+    return { ok: false as const, message: 'That product is no longer available.' }
+  }
+
+  const basket = await getOrCreateBasket(session.user.id)
+  const wanted = Math.trunc(quantity) || 0
+
+  if (wanted <= 0) {
+    await prisma.basketLine.deleteMany({ where: { basketId: basket.id, productId: product.id } })
+  } else {
+    const next = Math.max(wanted, product.minOrderQuantity)
+    await prisma.basketLine.upsert({
+      where: { basketId_productId: { basketId: basket.id, productId: product.id } },
+      update: { quantity: next },
+      create: { basketId: basket.id, productId: product.id, quantity: next },
+    })
+  }
+
+  revalidatePath('/basket')
+
+  return {
+    ok: true as const,
+    message: 'Basket updated',
+    summary: await basketSummary(session.customer, session.user.id),
+  }
 }
 
 export async function setBasketLineQuantity(lineId: string, quantity: number) {

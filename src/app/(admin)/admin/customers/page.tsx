@@ -59,7 +59,7 @@ export default async function AdminCustomersPage({
     <div className="p-4 lg:p-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-display font-semibold">Customers</h1>
+          <h1 className="text-display font-bold">Customers</h1>
           <p className="tnum mt-1 text-small text-ink-muted">
             {customers.length} {customers.length === 1 ? 'account' : 'accounts'}
           </p>
@@ -114,7 +114,7 @@ export default async function AdminCustomersPage({
         </ul>
       </div>
 
-      <div className="table-scroll mt-4 rounded-lg border border-hairline bg-surface shadow-xs">
+      <div className="table-scroll mt-4 rounded-lg border border-hairline bg-surface">
         <table className="w-full min-w-[860px] text-small">
           <thead className="border-b border-hairline bg-sunken text-left">
             <tr>

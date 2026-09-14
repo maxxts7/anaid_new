@@ -1,8 +1,9 @@
 import Link from 'next/link'
-import { Search, ShoppingBasket, UserRound } from 'lucide-react'
+import { Search, UserRound } from 'lucide-react'
 import { getCustomerSession } from '@/lib/auth/session'
-import { prisma } from '@/lib/db'
 import { canSeePrices } from '@/lib/permissions'
+import { Wordmark } from '@/components/ui/wordmark'
+import { BasketButton } from '@/components/customer/basket-button'
 
 /**
  * The customer header.
@@ -10,92 +11,76 @@ import { canSeePrices } from '@/lib/permissions'
  * Built for a phone held in one hand in a kitchen: the search field is the
  * widest target on the screen, and the wordmark is a link home rather than a
  * decoration.
+ *
+ * The bar is solid white rather than a frosted pane. Translucency blurs
+ * whatever slides under it, and on a catalogue what slides under it is the
+ * photography the customer is trying to look at. Its only decoration is a hair
+ * of accent laid along the bottom edge, under the hairline.
+ *
+ * Nothing in it is boxed except the one thing to press. The navigation is a row
+ * of words and the tools are circles that are invisible until the cursor finds
+ * them, because a bar of grey hover-pills reads as chrome and this header is
+ * meant to read as the top of a page.
  */
 export async function SiteHeader({ query }: { query?: string }) {
   const session = await getCustomerSession()
   const approved = session ? canSeePrices(session.customer.status) : false
 
-  const basketCount = approved
-    ? await prisma.basketLine.count({ where: { basket: { userId: session!.user.id } } })
-    : 0
-
   return (
-    <header className="sticky top-0 z-30 border-b border-hairline bg-surface/80 backdrop-blur-xl supports-[backdrop-filter]:bg-surface/70">
-      <div className="mx-auto flex h-14 max-w-6xl items-center gap-3 px-4">
-        <Link href="/" className="group mr-auto flex items-center gap-2.5">
-          <img
-            src="/brand/logo-mark.png"
-            alt=""
-            width={42}
-            height={28}
-            className="h-7 w-auto"
-            fetchPriority="high"
-          />
-          <span className="flex items-baseline gap-2">
-            <span
-              className="text-lead font-bold tracking-[-0.03em] text-ink transition-colors group-hover:text-accent"
-              style={{ fontStretch: '88%' }}
-            >
-              ANAID
-            </span>
-            <span className="hidden text-micro text-ink-muted sm:inline">Quality Disposables</span>
-          </span>
-        </Link>
+    <header className="sticky top-0 z-30">
+      <div className="rail">
+        <div className="mx-auto flex h-full max-w-6xl items-center gap-5 px-4 sm:px-6 lg:px-8">
+          <Link href="/" className="group mr-auto" aria-label="ANAID Quality Disposables Limited — home">
+            <Wordmark size="sm" />
+          </Link>
 
-        <nav className="hidden items-center gap-1 md:flex">
-          <Link href="/products" className="rounded-sm px-3 py-1.5 text-small text-ink-muted hover:bg-sunken hover:text-ink">
-            Catalogue
-          </Link>
-          {session && (
-            <Link href="/orders" className="rounded-sm px-3 py-1.5 text-small text-ink-muted hover:bg-sunken hover:text-ink">
-              Orders
-            </Link>
-          )}
-          <Link href="/about" className="rounded-sm px-3 py-1.5 text-small text-ink-muted hover:bg-sunken hover:text-ink">
-            About
-          </Link>
-          <Link href="/contact" className="rounded-sm px-3 py-1.5 text-small text-ink-muted hover:bg-sunken hover:text-ink">
-            Contact
-          </Link>
-        </nav>
+          <nav className="hidden items-center gap-7 md:flex">
+            <HeaderLink href="/products">Shop</HeaderLink>
+            {session && <HeaderLink href="/orders">Orders</HeaderLink>}
+            <HeaderLink href="/about">About</HeaderLink>
+            <HeaderLink href="/contact">Contact</HeaderLink>
+          </nav>
 
-        {approved && (
-          <Link
-            href="/basket"
-            className="relative flex size-9 items-center justify-center rounded-sm text-ink-muted hover:bg-sunken hover:text-ink"
-            aria-label={`Basket, ${basketCount} ${basketCount === 1 ? 'line' : 'lines'}`}
-          >
-            <ShoppingBasket className="size-[18px]" />
-            {basketCount > 0 && (
-              <span className="tnum absolute -top-0.5 -right-0.5 flex size-4 items-center justify-center rounded-full bg-accent text-[10px] font-semibold text-accent-ink">
-                {basketCount}
-              </span>
+          <div className="flex items-center gap-3.5">
+            {approved && <BasketButton />}
+
+            {session ? (
+              <Link href="/account" className="icon-btn" aria-label="Your account">
+                <UserRound className="size-[18px]" />
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="inline-flex h-10 items-center rounded-full border border-hairline px-4.5 text-base font-medium transition-[background-color,border-color,color] duration-150 hover:border-ink-muted hover:bg-sunken-soft"
+              >
+                Sign in
+              </Link>
             )}
-          </Link>
-        )}
-
-        {session ? (
-          <Link
-            href="/account"
-            className="flex size-9 items-center justify-center rounded-sm text-ink-muted hover:bg-sunken hover:text-ink"
-            aria-label="Your account"
-          >
-            <UserRound className="size-[18px]" />
-          </Link>
-        ) : (
-          <Link
-            href="/login"
-            className="rounded-sm border border-hairline-strong px-3 py-1.5 text-small font-medium hover:bg-sunken"
-          >
-            Sign in
-          </Link>
-        )}
+          </div>
+        </div>
       </div>
 
-      <div className="border-t border-hairline px-4 py-2.5 md:hidden">
+      <div className="border-b border-hairline bg-surface px-4 py-2.5 sm:px-6 md:hidden">
         <SearchField query={query} />
       </div>
     </header>
+  )
+}
+
+function HeaderLink({
+  href,
+  children,
+}: {
+  href: '/products' | '/orders' | '/about' | '/contact'
+  children: React.ReactNode
+}) {
+  return (
+    <Link
+      href={href}
+      className="text-[0.9375rem] font-bold tracking-[0.06em] text-ink-muted uppercase transition-colors hover:text-ink"
+    >
+      {children}
+    </Link>
   )
 }
 
@@ -103,13 +88,13 @@ export function SearchField({ query, className }: { query?: string; className?: 
   return (
     <form action="/products" className={className}>
       <div className="relative">
-        <Search className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-ink-faint" />
+        <Search className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-ink-faint" />
         <input
           type="search"
           name="q"
           defaultValue={query}
           placeholder="Search products or codes"
-          className="h-11 w-full rounded-md border border-hairline-strong bg-surface pr-3 pl-9 text-base shadow-xs placeholder:text-ink-faint hover:border-ink-faint focus:border-accent focus:ring-4 focus:ring-accent/12 focus:outline-none"
+          className="h-11 w-full rounded-[10px] border border-hairline bg-surface pr-4 pl-10 text-base placeholder:text-ink-faint hover:border-hairline-strong focus:border-accent focus:ring-4 focus:ring-accent/10 focus:outline-none"
         />
       </div>
     </form>

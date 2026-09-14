@@ -42,13 +42,13 @@ export default async function AdminProductPage({ params }: { params: Promise<{ i
         Products
       </Link>
 
-      <h1 className="mt-3 text-display font-semibold">{product.name}</h1>
+      <h1 className="mt-3 text-display font-bold">{product.name}</h1>
       <p className="tnum mt-1 text-small text-ink-muted">
         {product.sku} — {product.category.name}
       </p>
 
       <div className="mt-6 grid gap-4 xl:grid-cols-[1fr_360px]">
-        <section className="rounded-lg border border-hairline bg-surface shadow-xs p-5">
+        <section className="rounded-lg border border-hairline bg-surface p-5">
           <h2 className="mb-4 font-medium">Details</h2>
           {staffCan(staff.roles, 'products.edit') ? (
             <ProductForm
@@ -165,7 +165,7 @@ export default async function AdminProductPage({ params }: { params: Promise<{ i
 
 function Panel({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="overflow-hidden rounded-lg border border-hairline bg-surface shadow-xs">
+    <section className="overflow-hidden rounded-lg border border-hairline bg-surface">
       <h2 className="border-b border-hairline px-4 py-2.5 font-medium">{title}</h2>
       <div className="p-4">{children}</div>
     </section>

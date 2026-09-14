@@ -3,36 +3,64 @@
 /* ---------------------------------------------------------------------------
    ANAID — design tokens
 
-   Cool paper, near-black ink, one accent. The accent is food-safe blue: in food
-   service blue is the safety colour precisely because nothing edible is blue,
-   which makes it the one colour that belongs to this trade rather than to
-   dashboards in general. It marks actions and nothing else.
+   Cool paper, near-black ink, one accent. The accent is ANAID's own teal, taken
+   from the mark rather than chosen — the colour is already on every carton the
+   customer receives, so the interface agrees with the goods instead of arguing
+   with them. It marks actions and nothing else.
+
+   The page itself is white and the structure is drawn in hairlines rather than
+   in fills and shadows — a bordered, typographic layout where the rules and the
+   whitespace do the work a card border used to do. Nothing in the palette
+   changed to get there; what changed is how much of the page is coloured in.
 
    Everything here is a token so that real branding can be dropped in later from
    the admin settings screen without touching a component.
 --------------------------------------------------------------------------- */
 
 @theme {
-  /* Surfaces */
-  --color-ground: #f4f6f7;
+  /* Surfaces. Ground and surface are both white: a block is separated from the
+     page by a rule and by the space around it, not by a change of fill. The
+     tinted greys survive for the few places that genuinely need a panel. */
+  --color-ground: #ffffff;
   --color-surface: #ffffff;
   --color-sunken: #eef1f3;
+  --color-sunken-soft: #f6f8f9;
   --color-inverse: #101418;
 
-  /* Ink */
+  /* Ink.
+
+     Four steps, but a short ramp: the lightest of them is still dark enough to
+     read a price list in. Secondary text here used to run to #97a1a9, which on
+     white is a whisper — it looked refined on a designer's screen and vanished
+     on a warehouse tablet. The ramp is now compressed into the top half of the
+     range, so "muted" means quieter, not fainter. */
   --color-ink: #101418;
-  --color-ink-muted: #66707a;
-  --color-ink-faint: #97a1a9;
+  --color-ink-soft: #252d35;
+  --color-ink-muted: #49535d;
+  --color-ink-faint: #6e7883;
   --color-ink-inverse: #f4f6f7;
 
-  /* Lines */
+  /* Lines. Three weights, because a layout drawn in rules needs to be able to
+     whisper: soft divides rows inside a block, hairline bounds the block, and
+     strong is reserved for a control the user can touch. */
+  --color-hairline-soft: #eff2f4;
   --color-hairline: #e4e8eb;
   --color-hairline-strong: #cfd6db;
 
-  /* Accent — actions only */
-  --color-accent: #1740de;
-  --color-accent-hover: #1234b4;
-  --color-accent-soft: #edf0ff;
+  /* Accent — actions only, and ANAID's own colour rather than a borrowed one.
+     Sampled from the mark: the "A" is #0e7c7f and the globe runs out to
+     #4fb295, so the accent is that teal and the lighter steps travel along the
+     same gradient the logo does.
+
+     The ramp stops where legibility does. Everything up to `accent-2` clears
+     4.5:1 against white text, so any of it can sit under a label; `accent-3` is
+     the logo's green and is used only for underlines, rules and glow, never
+     behind type. */
+  --color-accent: #0e7c7f;
+  --color-accent-2: #0f8386;
+  --color-accent-3: #2fa896;
+  --color-accent-hover: #0a6265;
+  --color-accent-soft: #e7f3f3;
   --color-accent-ink: #ffffff;
 
   /* Status. Muted on purpose: a warehouse screen full of neon is unreadable. */
@@ -43,44 +71,72 @@
   --color-refused: #b3261e;
   --color-refused-soft: #fdeeed;
 
-  /* Type */
+  /* Type.
+
+     One modular scale, stepping by 1.095 — fine enough that two neighbouring
+     sizes read as related rather than as a jump, which is what lets a page set
+     four or five sizes without looking like a ransom note. The large sizes take
+     every other step (×1.20), so a heading is always clearly a heading.
+
+       micro 11 · mini 12 · small 13.2 · base 16 · lead 17.3 · read 19
+       lede 22.8 · title 24 · display 32.8 · hero →39.4
+
+     Two sizes sit off the scale on purpose, because the reference does the
+     same: a section heading at 24 and the hero, which is fluid.
+
+     Line heights are unitless so they hold when a size is overridden. */
   --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
 
   --text-micro: 0.6875rem;
-  --text-micro--line-height: 1rem;
-  --text-small: 0.8125rem;
-  --text-small--line-height: 1.25rem;
-  --text-base: 0.9375rem;
-  --text-base--line-height: 1.5rem;
-  --text-lead: 1.0625rem;
-  --text-lead--line-height: 1.6rem;
-  --text-title: 1.375rem;
-  --text-title--line-height: 1.75rem;
-  --text-display: 1.9375rem;
-  --text-display--line-height: 2.1875rem;
-  --text-hero: 2.875rem;
-  --text-hero--line-height: 3rem;
+  --text-micro--line-height: 1.45;
+  --text-mini: 0.75rem;
+  --text-mini--line-height: 1.35;
+  --text-small: 0.825rem;
+  --text-small--line-height: 1.5;
+  --text-base: 1rem;
+  --text-base--line-height: 1.6;
+  --text-lead: 1.08125rem;
+  --text-lead--line-height: 1.55;
+  --text-read: 1.1875rem;
+  --text-read--line-height: 1.6;
+  --text-lede: 1.425rem;
+  --text-lede--line-height: 1.45;
+  --text-title: 1.5rem;
+  --text-title--line-height: 1.25;
+  --text-display: 2.05rem;
+  --text-display--line-height: 1.18;
+  --text-hero: clamp(1.875rem, 3.6vw, 2.4625rem);
+  --text-hero--line-height: 1.08;
 
-  /* Corners. Softer than the first pass, and graded: a tile is not a chip. */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 14px;
-  --radius-xl: 20px;
+  /* Corners. Softer and graded: a tile is not a chip. */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
 
-  /* Elevation. Barely there — this is a bordered design, and shadow is used
-     only to lift something the user is touching. */
+  /* Elevation. Almost nothing at rest — this is a ruled design. Shadow appears
+     only under the thing the cursor is on, and carries a little of the accent
+     with it so a lifted card reads as live rather than as merely raised. */
   --shadow-xs: 0 1px 2px rgb(16 20 24 / 0.04);
-  --shadow-sm: 0 1px 3px rgb(16 20 24 / 0.06), 0 1px 2px rgb(16 20 24 / 0.04);
-  --shadow-md: 0 4px 12px -2px rgb(16 20 24 / 0.08), 0 2px 6px -2px rgb(16 20 24 / 0.05);
-  --shadow-lg: 0 12px 32px -8px rgb(16 20 24 / 0.14), 0 4px 10px -4px rgb(16 20 24 / 0.06);
+  --shadow-sm: 0 1px 2px rgb(16 20 24 / 0.05);
+  --shadow-md: 0 1px 2px rgb(16 20 24 / 0.04), 0 10px 28px -14px rgb(16 20 24 / 0.16);
+  --shadow-lg: 0 1px 2px rgb(16 20 24 / 0.05), 0 18px 40px -18px rgb(16 20 24 / 0.22);
+  --shadow-glow: 0 14px 34px -18px rgb(14 124 127 / 0.45);
+  --shadow-glow-lift: 0 20px 46px -20px rgb(47 168 150 / 0.55);
 }
 
 /* ---------------------------------------------------------------------------
    Base
 --------------------------------------------------------------------------- */
 
-* {
-  border-color: var(--color-hairline);
+/* A border with no colour named is a hairline. This has to live inside the base
+   layer: unlayered CSS outranks anything Tailwind emits, so as a bare rule it
+   was quietly winning against every `border-<colour>` utility in the app —
+   `border-accent`, `border-transparent` and the rest all came out hairline. */
+@layer base {
+  * {
+    border-color: var(--color-hairline);
+  }
 }
 
 html {
@@ -93,20 +149,25 @@ body {
   color: var(--color-ink);
   font-family: var(--font-sans);
   font-size: var(--text-base);
-  line-height: 1.5rem;
+  line-height: 1.6;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-/* Headings run slightly narrow and tight — the proportions of a printed trade
-   price list, and the reason the type reads as this trade rather than any app. */
+/* Headings sit at normal width and take only as much negative tracking as the
+   size asks for — enough to close the gaps that open up at display sizes, and
+   not so much that a two-word heading looks squeezed. */
 h1,
 h2,
 h3 {
-  font-stretch: 96%;
-  letter-spacing: -0.016em;
+  letter-spacing: -0.012em;
+  line-height: 1.2;
   text-wrap: balance;
+}
+
+h1 {
+  line-height: 1.08;
 }
 
 p {
@@ -137,7 +198,8 @@ button,
 input,
 select,
 textarea,
-[role='button'] {
+[role='button'],
+[role='tab'] {
   transition-property: color, background-color, border-color, box-shadow, transform, opacity;
   transition-duration: 160ms;
   transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
@@ -157,6 +219,366 @@ textarea,
 }
 
 /* ---------------------------------------------------------------------------
+   The eyebrow
+
+   A small capitalised label above a heading, standing in for the boxed section
+   headers a card layout would otherwise need. It is the cheapest way to give a
+   page hierarchy without drawing anything.
+--------------------------------------------------------------------------- */
+
+.eyebrow {
+  font-size: var(--text-mini);
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-ink-muted);
+}
+
+/* ---------------------------------------------------------------------------
+   The top bar
+
+   Solid white and opaque — not a frosted pane. A translucent header blurs the
+   photography sliding under it, which on a catalogue means the thing the
+   customer is looking at goes soft every time they scroll. The only decoration
+   is a hair of accent laid along its bottom edge.
+--------------------------------------------------------------------------- */
+
+.rail {
+  position: relative;
+  height: 3.875rem;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-hairline);
+}
+
+.rail::after {
+  position: absolute;
+  inset-inline: 0;
+  bottom: -1px;
+  height: 1px;
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--color-accent) 34%, transparent) 24%,
+    color-mix(in srgb, var(--color-accent-3) 32%, transparent) 74%,
+    transparent 100%
+  );
+  pointer-events: none;
+  content: '';
+}
+
+/* The wordmark carries the bar on its own, at a size that would be a heading
+   anywhere else on the page. */
+.rail-mark {
+  font-size: var(--text-title);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+/* A tool in the top bar: a 32px circle that is nothing at all until the cursor
+   is on it, and then is quietly the accent. */
+.icon-btn {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  background: none;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+}
+
+.icon-btn:hover {
+  border-color: color-mix(in srgb, var(--color-accent) 18%, transparent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+/* ---------------------------------------------------------------------------
+   The accent fill
+
+   A primary button is not a flat block of the accent — it is a shallow gradient
+   travelling across the three accent steps, lit from underneath by a glow of
+   the same colour. It is the one place in the interface allowed to look lit.
+--------------------------------------------------------------------------- */
+
+.btn-accent {
+  background-image: linear-gradient(
+    118deg,
+    var(--color-accent-hover) 0%,
+    var(--color-accent) 54%,
+    var(--color-accent-2) 100%
+  );
+  box-shadow: var(--shadow-sm), var(--shadow-glow);
+}
+
+@media (hover: hover) {
+  .btn-accent:hover {
+    background-image: linear-gradient(
+      118deg,
+      var(--color-accent-hover) -22%,
+      var(--color-accent) 38%,
+      var(--color-accent-2) 96%
+    );
+    box-shadow: var(--shadow-sm), var(--shadow-glow-lift);
+  }
+}
+
+/* A rule that fades in from the paper at both ends, tinted with the accent.
+   Used where a plain border would cut the page in half too bluntly. */
+.rule-soft {
+  height: 1px;
+  border: 0;
+  background-image: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--color-accent) 26%, transparent) 22%,
+    color-mix(in srgb, var(--color-accent-3) 30%, transparent) 72%,
+    transparent 100%
+  );
+}
+
+/* ---------------------------------------------------------------------------
+   Tabs
+
+   The catalogue is browsed through two rails of these, one nested inside the
+   other. They are deliberately not chips: a filter here is a word on a rule,
+   and the only thing marking a chosen one is weight, ink and a two-pixel accent
+   underline. A rail of twelve categories set this way reads as a list of names;
+   the same twelve set as filled chips reads as a wall of boxes.
+
+   More than one can be on at once, so they carry `aria-pressed` rather than
+   `aria-selected` — the mark below keys off that.
+
+   `.tab-major` is the top level and `.tab` the level beneath it, told apart by
+   size and by the underline: the parent takes a solid ink rule, the child an
+   accent one, so at a glance you can see which of the two rails you are on.
+--------------------------------------------------------------------------- */
+
+.tablist {
+  display: flex;
+  align-items: flex-end;
+  column-gap: 2.5rem;
+  row-gap: 0.25rem;
+  border-bottom: 1px solid var(--color-hairline);
+
+  /* On a phone the rail is swiped; from a tablet up there is room to wrap, and
+     a wrapped rail shows every department at once rather than hiding half of
+     them off the right-hand edge. */
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+
+.tablist::-webkit-scrollbar {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .tablist {
+    flex-wrap: wrap;
+    overflow-x: visible;
+  }
+}
+
+/* The department rail, stood on its end.
+
+   Eleven names wrapped across two horizontal rows read as a paragraph of
+   categories; the same eleven in a column read as an index, which is what they
+   are. The rule the rail is drawn against moves from the bottom edge to the
+   right edge, and the marker on the selected tab moves with it — it still sits
+   on the line dividing the rail from the panel, now pointing at the products it
+   opened. A phone has no room for a column of this, so below the tablet
+   breakpoint it stays the rail you swipe. */
+@media (min-width: 768px) {
+  .tablist-vertical {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    row-gap: 0.125rem;
+    border-bottom: 0;
+    border-right: 1px solid var(--color-hairline);
+    overflow-x: visible;
+  }
+
+  .tablist-vertical .tab-major {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-right: -1px;
+    margin-bottom: 0;
+    padding: 0.4375rem 1.5rem 0.4375rem 0;
+    font-size: var(--text-base);
+    letter-spacing: -0.006em;
+    text-align: left;
+    white-space: normal;
+    text-wrap: balance;
+  }
+
+  .tablist-vertical .tab-major::after {
+    inset-block: 0.25rem;
+    inset-inline: auto 0;
+    width: 2px;
+    height: auto;
+    border-radius: 2px 0 0 2px;
+  }
+
+  .tablist-vertical .tab-n {
+    margin-left: 0;
+  }
+}
+
+.tablist-minor {
+  column-gap: 1.25rem;
+  border-bottom-color: var(--color-hairline-soft);
+}
+
+.tab-major,
+.tab {
+  position: relative;
+  appearance: none;
+  flex: none;
+  background: none;
+  border: 0;
+  margin-bottom: -1px;
+  color: var(--color-ink-muted);
+  cursor: pointer;
+  white-space: nowrap;
+  scroll-margin-inline: 1rem;
+}
+
+.tab-major {
+  padding: 0 0 0.875rem;
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: -0.006em;
+}
+
+.tab {
+  padding: 0 0 0.625rem;
+  font-size: 0.84375rem;
+  font-weight: 500;
+}
+
+.tab-major::after,
+.tab::after {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: transparent;
+  transition: background 160ms cubic-bezier(0.2, 0, 0, 1);
+  content: '';
+}
+
+.tab-major:hover,
+.tab:hover {
+  color: var(--color-ink);
+}
+
+.tab-major[aria-pressed='true'],
+.tab[aria-pressed='true'] {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.tab-major[aria-pressed='true']::after {
+  background: var(--color-ink);
+}
+
+.tab[aria-pressed='true']::after {
+  background: linear-gradient(90deg, var(--color-accent), var(--color-accent-3));
+}
+
+@media (hover: hover) {
+  .tab-major:not([aria-pressed='true']):hover::after {
+    background: var(--color-hairline-strong);
+  }
+
+  .tab:not([aria-pressed='true']):hover::after {
+    background: var(--color-hairline-strong);
+  }
+}
+
+.tab-major:focus-visible,
+.tab:focus-visible {
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+/* ---------------------------------------------------------------------------
+   The switcher
+
+   Two ways of looking at the same list, set as one object rather than two
+   buttons: a sunken trough with the chosen half lifted out of it in white. It
+   is the only control in the interface that is filled rather than ruled, which
+   is what makes it read as a switch and not as a pair of things to press.
+--------------------------------------------------------------------------- */
+
+.switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--radius-sm);
+  background: var(--color-sunken-soft);
+}
+
+.switch-half {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.3125rem 0.75rem;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  font-size: var(--text-small);
+  font-weight: 600;
+  line-height: 1.25;
+  color: var(--color-ink-muted);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.switch-half:hover {
+  color: var(--color-accent);
+}
+
+.switch-half[aria-pressed='true'] {
+  background: var(--color-surface);
+  box-shadow: var(--shadow-sm);
+  color: var(--color-ink);
+}
+
+.switch-half:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* The count beside a tab label. Small, unemphatic, and never the thing you read
+   first — it answers "how many" only once the name has been read. */
+.tab-n {
+  margin-left: 0.4rem;
+  font-size: var(--text-micro);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-ink-faint);
+}
+
+[aria-pressed='true'] > .tab-n {
+  color: var(--color-ink-muted);
+}
+
+/* ---------------------------------------------------------------------------
    The withheld price
 
    The device that carries the central rule of the whole system. Where a price
@@ -171,7 +593,7 @@ textarea,
   display: inline-flex;
   align-items: center;
   overflow: hidden;
-  border: 1px solid var(--color-hairline-strong);
+  border: 1px solid var(--color-hairline);
   border-radius: var(--radius-sm);
   background-image: repeating-linear-gradient(
     -45deg,
@@ -232,23 +654,48 @@ textarea,
   border-top: 1px solid var(--color-hairline);
 }
 
+/* A bordered block that lifts under the cursor, taking a little of the accent
+   with it. The only shadow anywhere in the interface that is allowed to show. */
+.lift {
+  transition-property: border-color, box-shadow, transform;
+  transition-duration: 180ms;
+  transition-timing-function: cubic-bezier(0.2, 0, 0, 1);
+}
+
+@media (hover: hover) {
+  .lift:hover {
+    border-color: color-mix(in srgb, var(--color-accent) 22%, var(--color-hairline));
+    box-shadow: var(--shadow-md), var(--shadow-glow);
+    transform: translateY(-2px);
+  }
+}
+
+.lift:focus-within {
+  border-color: color-mix(in srgb, var(--color-accent) 30%, var(--color-hairline));
+}
+
+/* A sticky column that scrolls within itself without advertising it. Left to
+   the browser, the scrollbar draws a hard line down the middle of the page
+   between the sidebar and the products; the column only needs to scroll at all
+   from the tablet breakpoint up, where it is sticky. */
+@media (min-width: 768px) {
+  .quiet-scroll {
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    scrollbar-width: none;
+  }
+
+  .quiet-scroll::-webkit-scrollbar {
+    display: none;
+  }
+}
+
 /* Keeps a dense admin table scrollable on a tablet without the page itself
    scrolling sideways. */
 .table-scroll {
   overflow-x: auto;
   overscroll-behavior-x: contain;
   scrollbar-width: thin;
-}
-
-/* Hides the scrollbar on chip rails, which are swiped rather than dragged. */
-.rail {
-  overflow-x: auto;
-  overscroll-behavior-x: contain;
-  scrollbar-width: none;
-}
-
-.rail::-webkit-scrollbar {
-  display: none;
 }
 
 /* One orchestrated entrance, used on the catalogue grid only. */

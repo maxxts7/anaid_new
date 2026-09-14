@@ -21,7 +21,7 @@ export async function StatusBanner() {
       tone: 'bg-pending-soft text-pending border-pending/20',
     },
     PENDING_APPROVAL: {
-      text: 'Your account is awaiting approval from ANAID. You can browse the catalogue now; prices appear once you are approved.',
+      text: 'Your account is awaiting approval from ANAID. You can browse the shop now; prices appear once you are approved.',
       tone: 'bg-pending-soft text-pending border-pending/20',
     },
     REJECTED: {

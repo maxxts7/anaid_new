@@ -50,7 +50,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <aside className="border-b border-hairline bg-surface lg:sticky lg:top-0 lg:h-dvh lg:border-r lg:border-b-0">
         <div className="flex items-center justify-between gap-2 px-4 py-3 lg:block">
           <Link href="/admin" className="block">
-            <span className="text-lead font-bold tracking-[-0.03em]" style={{ fontStretch: '88%' }}>
+            <span className="text-lead font-bold tracking-[-0.03em]">
               ANAID
             </span>
             <span className="ml-2 text-micro text-ink-muted lg:ml-0 lg:block">Staff dashboard</span>

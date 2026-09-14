@@ -41,7 +41,7 @@ export default async function AdminProductsPage({
 
   return (
     <div className="p-4 lg:p-6">
-      <h1 className="text-display font-semibold">Products</h1>
+      <h1 className="text-display font-bold">Products</h1>
       <p className="tnum mt-1 text-small text-ink-muted">
         {visible.length} {visible.length === 1 ? 'product' : 'products'}
         {lowStockOnly ? ' at or below the low-stock warning' : ''}
@@ -72,7 +72,7 @@ export default async function AdminProductsPage({
         </Link>
       </div>
 
-      <div className="table-scroll mt-4 rounded-lg border border-hairline bg-surface shadow-xs">
+      <div className="table-scroll mt-4 rounded-lg border border-hairline bg-surface">
         <table className="w-full min-w-[860px] text-small">
           <thead className="border-b border-hairline bg-sunken text-left">
             <tr>
