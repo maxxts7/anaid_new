@@ -27,10 +27,13 @@ import type { PriceResult } from '@/lib/pricing'
  * for them, and the price fell off the end.
  */
 
-/** When each column has earned its place, measured against the table's column. */
+/**
+ * When each column has earned its place, measured against the table's column.
+ * The minimum is not among them: it decides whether a line can be ordered at
+ * all, so it stands with the price and never drops.
+ */
 const AT = {
   pack: '@lg:table-cell',
-  minimum: '@2xl:table-cell',
   carton: '@3xl:table-cell',
   stock: '@4xl:table-cell',
 } as const
@@ -80,7 +83,7 @@ export function ProductRow({
       </th>
 
       <Cell at={AT.pack}>{product.packSize ?? '—'}</Cell>
-      <Cell at={AT.minimum}>
+      <Cell>
         {product.minOrderQuantity} {product.sellUnit}
         {product.minOrderQuantity === 1 ? '' : 's'}
       </Cell>
@@ -91,7 +94,15 @@ export function ProductRow({
 
       <td className="w-px py-3 pl-4 text-right align-middle whitespace-nowrap">
         {price ? (
-          <Price pence={price.unitPricePence} unit={product.sellUnit} size="sm">
+          // "per carton" is only worth repeating down every row once there is
+          // room for it; below that the Min order column beside it is already
+          // saying what a unit is.
+          <Price
+            pence={price.unitPricePence}
+            unit={product.sellUnit}
+            size="sm"
+            unitClassName="hidden @md:inline"
+          >
             <BulkPriceHint
               bands={price.bands}
               sellUnit={product.sellUnit}
@@ -119,11 +130,13 @@ export function ProductRow({
   )
 }
 
-function Cell({ at, children }: { at: string; children: React.ReactNode }) {
+/** Always shown when `at` is absent; otherwise only once the column is wide enough. */
+function Cell({ at, children }: { at?: string; children: React.ReactNode }) {
   return (
     <td
       className={cn(
-        'tnum hidden w-px px-3 py-3 align-middle text-small whitespace-nowrap text-ink-muted',
+        'tnum w-px px-3 py-3 align-middle text-small text-ink-muted',
+        at && 'hidden',
         at
       )}
     >
@@ -140,7 +153,7 @@ export function ProductRowHeader() {
         Product
       </th>
       <HeadCell at={AT.pack}>Pack</HeadCell>
-      <HeadCell at={AT.minimum}>Min order</HeadCell>
+      <HeadCell>Min order</HeadCell>
       <HeadCell at={AT.carton}>Per carton</HeadCell>
       <HeadCell at={AT.stock}>Stock</HeadCell>
       <th scope="col" className="eyebrow w-px py-2.5 pl-4 text-right whitespace-nowrap">
@@ -150,11 +163,11 @@ export function ProductRowHeader() {
   )
 }
 
-function HeadCell({ at, children }: { at: string; children: React.ReactNode }) {
+function HeadCell({ at, children }: { at?: string; children: React.ReactNode }) {
   return (
     <th
       scope="col"
-      className={cn('eyebrow hidden w-px px-3 py-2.5 text-left whitespace-nowrap', at)}
+      className={cn('eyebrow w-px px-3 py-2.5 text-left', at && 'hidden', at)}
     >
       {children}
     </th>

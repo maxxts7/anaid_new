@@ -322,11 +322,14 @@ export function CatalogueFilters({
           {visible.length === 0 ? (
             <Empty onClear={clear} />
           ) : view === 'list' ? (
-            // No overflow container here on purpose. The columns already drop
-            // themselves to fit — that is what the container query below does —
-            // so the table never needs to scroll, and an `overflow: auto` would
-            // clip the bulk-price panels that rise out of the price column.
-            <div className="@container">
+            // The columns drop themselves to fit — that is what the container
+            // query below does — so the table needs no scroller, and having one
+            // would clip the bulk-price panels that rise out of the price
+            // column. The one exception is a phone narrower than about 390px,
+            // where even the three surviving columns will not fit: there the
+            // table scrolls rather than dragging the whole page sideways with
+            // it, and a clipped hover panel costs nothing on a touch screen.
+            <div className="@container max-[389px]:overflow-x-auto">
               <table className="w-full border-collapse text-left">
                 <thead>{header}</thead>
                 <tbody>{visible.map((entry) => entry.row)}</tbody>

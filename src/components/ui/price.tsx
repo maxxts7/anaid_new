@@ -18,12 +18,15 @@ export function Price({
   unit,
   size = 'md',
   className,
+  unitClassName,
   children,
 }: {
   pence: number
   unit?: string | null
   size?: 'sm' | 'md' | 'lg'
   className?: string
+  /** For hiding the unit where something beside it already says what it is. */
+  unitClassName?: string
   /** Slotted in hard against the figure — a mark about the price itself. */
   children?: React.ReactNode
 }) {
@@ -37,7 +40,9 @@ export function Price({
     <span className={cn('tnum inline-flex items-baseline gap-1 font-semibold text-ink', sizes[size], className)}>
       {formatPence(pence)}
       {children}
-      {unit && <span className="text-micro font-normal text-ink-muted">per {unit}</span>}
+      {unit && (
+        <span className={cn('text-micro font-normal text-ink-muted', unitClassName)}>per {unit}</span>
+      )}
     </span>
   )
 }
