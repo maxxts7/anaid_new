@@ -182,11 +182,24 @@ export async function registerCustomer(
     after: { businessName: input.businessName, status: 'REGISTERED' },
   })
 
-  await issueOtp({
+  // The outcome matters. When the hourly limit is reached no code is written at
+  // all, and sending the customer on to a screen that asks for one leaves them
+  // typing into a check that cannot pass — against whatever older code happens
+  // still to be live. The account is made either way; only the code is refused,
+  // so they are told to wait rather than sent in a circle.
+  const sent = await issueOtp({
     identifier: input.mobile,
     channel: identifierChannel(input.mobile),
     purpose: 'REGISTRATION',
   })
+
+  if (!sent.ok) {
+    return {
+      message:
+        `Your account is set up, but we have sent several codes to ${input.mobile} in the last hour. ` +
+        `Try signing in again in ${sent.retryAfterMinutes} minutes and we will send a fresh one.`,
+    }
+  }
 
   redirect(`/verify?to=${encodeURIComponent(input.mobile)}&purpose=registration`)
 }

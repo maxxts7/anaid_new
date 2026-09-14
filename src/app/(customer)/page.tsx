@@ -272,20 +272,20 @@ export default async function HomePage() {
           </section>
 
           <Section eyebrow="Always from nature" title="The pure promise" lede={ONE_STOP} roomy>
-            {/* The marks lead and the words follow: each pillar is read as a
-                picture first, with the explanation kept deliberately quiet
-                underneath it. */}
+            {/* The marks lead and the words follow. The words are set at the
+                same size as the rest of the page reads at, so a pillar is not a
+                footnote — only the weight tells its title from its sentence. */}
             <ul className="mt-12 grid gap-x-10 gap-y-14 sm:grid-cols-2 lg:grid-cols-4">
               {PILLARS.map((pillar) => (
                 <li key={pillar.id}>
-                  <img src={pillar.image} alt="" width={100} height={100} loading="lazy" className="size-25" />
-                  <h3 className="mt-5 text-small font-semibold">{pillar.title}</h3>
-                  <p className="mt-2 text-mini text-ink-soft">{pillar.body}</p>
+                  <img src={pillar.image} alt="" width={125} height={125} loading="lazy" className="size-[125px]" />
+                  <h3 className="mt-5 text-base font-semibold">{pillar.title}</h3>
+                  <p className="mt-2 text-base text-ink-soft">{pillar.body}</p>
                 </li>
               ))}
             </ul>
 
-            <p className="mt-12 text-small">
+            <p className="mt-12 text-base">
               <Link href="/about" className="font-medium text-accent underline underline-offset-4">
                 More about ANAID
               </Link>
